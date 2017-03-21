@@ -1,0 +1,20 @@
+{
+  "name": "api-system",
+  "version": "1.0.0",
+  "description": "Generic powerful flexible API layer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://wyatt@xoumz.com/var/git/api-system"
+  },
+  "keywords": [
+    "API",
+    "server",
+    "ORM"
+  ],
+  "author": "Wyatt Greenway",
+  "license": "ISC"
+}
