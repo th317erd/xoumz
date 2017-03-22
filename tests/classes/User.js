@@ -2,10 +2,11 @@ import { schemaRecordFactory } from '../../lib/schema';
 
 const User = schemaRecordFactory('User', function(addField) {
   addField(String, 'test', function() {
-    this.validator('test');
+    this.validator = 'test';
   });
 
-  addField(String, 'dependent');
+  addField([String], 'dependents');
+  addField(this, 'parent');
 }, {
   init: function() {
     

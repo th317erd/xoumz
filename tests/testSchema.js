@@ -1,10 +1,10 @@
-import { schemaRecordFactory } from '../lib/schema';
+import { constructType, schemaRecordFactory } from '../lib/schema';
 import { User } from './classes/User';
 
 const RootSchema = schemaRecordFactory('Root', function(addField) {
   addField(User, 'User');
 });
 
-console.log('Root schema: ', RootSchema.schema.User.type.schema);
+console.log('Final type: ', constructType(User, {test: 'Hello world!', dependents: ['derp', 'hello', undefined]}));
 
 module.exports = RootSchema;
