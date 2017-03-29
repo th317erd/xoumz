@@ -5,6 +5,6 @@ const RootSchema = schemaRecordFactory('Root', function(addField) {
   addField(User, 'User');
 });
 
-console.log('Final type: ', constructType(User, {test: 'Hello world!', dependents: ['derp', 'hello', undefined]}));
+console.log('Final type: ', constructType(User, {test: 'Hello world!', dependents: []}));
 
 module.exports = RootSchema;
