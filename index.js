@@ -1,4 +1,4 @@
-import mainSchema from './tests/testSchema';
-import util from 'util';
+import * as schema from './lib/schema';
+import * as rme from './lib/schema';
 
-console.log('Schema: ', mainSchema.inspect());
+module.exports = Object.assign(module.exports, schema, rme);

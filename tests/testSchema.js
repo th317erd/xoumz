@@ -1,10 +1,11 @@
 import { constructType, schemaRecordFactory } from '../lib/schema';
-import { User } from './classes/User';
+import { User } from './schema';
 
-const RootSchema = schemaRecordFactory('Root', function(addField) {
-  addField(User, 'User');
-});
+var user = new User(),
+    childUser = new User();
 
-console.log('Final type: ', constructType(User, {test: 'Hello world!', dependents: []}));
+user.owner = user;
+childUser.owner = user;
 
-module.exports = RootSchema;
+console.log('User type: ', user.toString());
+console.log('Child type: ', childUser.toString());
