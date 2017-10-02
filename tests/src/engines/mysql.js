@@ -1,4 +1,4 @@
-import { ServiceEngine } from '../../lib/service-engine';
+import { ServiceEngine } from '../../../index';
 
 class MySQLEngine extends ServiceEngine {
   getServiceName() {

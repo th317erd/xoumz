@@ -1,7 +1,7 @@
-import { defineSchema, generateUUID } from '../../lib/schema';
+import { Schema, generateUUID } from '../../../index';
 import { Dependent } from '../models';
 
-module.exports = defineSchema(Dependent, (engine) => {
+module.exports = Schema.defineSchema(Dependent, (engine) => {
   return {
     generateID: () => ('DP_' + generateUUID()),
     fields: {

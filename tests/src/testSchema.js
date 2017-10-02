@@ -16,14 +16,14 @@ import { JSONEngine } from './engines';
   console.log('Dependent schema: ', Dependent.schema());
   console.log('User schema: ', User.schema());
 
-  var depStr = Dependent.schema(JE).serialize(dep),
-      userStr = User.schema(JE).serialize(user);
+  var depStr = await JE.sink(dep),
+      userStr = await JE.sink(user);
 
   console.log('Dependent JSON: ', depStr);
   console.log('User JSON: ', userStr);
 
-  dep = Dependent.schema(JE).unserialize(depStr);
-  user = User.schema(JE).unserialize(userStr);
+  dep = await JE.source(depStr, Dependent);
+  user = await JE.source(userStr, User);
 
   console.log('Dependent: ', dep);
   console.log('User: ', user);

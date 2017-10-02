@@ -1,4 +1,4 @@
-import { ServiceEngine } from '../../lib/service-engine';
+import { ServiceEngine } from '../../../index';
 
 class JSONEngine extends ServiceEngine {
   getServiceName() {

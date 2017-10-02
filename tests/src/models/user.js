@@ -1,5 +1,9 @@
-class User {
+import { Model } from '../../../index';
+
+class User extends Model {
   constructor() {
+    super();
+    
     this.firstName = 'Test';
     this.lastName = 'User';
     this.dependents = [];

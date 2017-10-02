@@ -40,7 +40,7 @@ class SelectorEngine {
     return value;
   }
 
-  createSelector(...args) {
+  create(...args) {
     if (args.length < 2)
       throw new Error('Transmutor must have at least two arguments (one getter, one resolver)');
 
@@ -102,4 +102,6 @@ class SelectorEngine {
   }
 }
 
-module.exports = SelectorEngine;
+module.exports = Object.assign(module.exports, {
+  SelectorEngine
+});

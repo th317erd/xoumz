@@ -1,5 +1,5 @@
 import { definePropertyRO, definePropertyRW, instanceOf, generateUUID } from './utils';
-import SelectorEngine from './selector-engine';
+import { SelectorEngine } from './selector-engine';
 
 const se = new SelectorEngine();
 
@@ -76,6 +76,12 @@ class Schema {
   }
 }
 
+class Model {
+  getSchema(engine) {
+    return this.constructor.schema(engine);
+  }
+}
+
 function sanitizeSchema(rawSchema, modelClass) {
   if (rawSchema instanceof Schema)
     return rawSchema;
@@ -138,7 +144,7 @@ function sanitizeSchema(rawSchema, modelClass) {
 }
 
 function defineSchema(modelClass, resolver) {
-  var selector = modelClass.schema = se.createSelector((engine) => engine, function(engine) {
+  var selector = modelClass.schema = se.create((engine) => engine, function(engine) {
     var schema = resolver(engine);
     return sanitizeSchema(schema, modelClass);
   });
@@ -186,10 +192,13 @@ function filterSchemaToEngine(schema, engine) {
   return finalSchema;
 }
 
-module.exports = Object.assign(module.exports, {
-  generateUUID,
-  ID,
-  Schema,
+Object.assign(Schema, {
   defineSchema,
   filterSchemaToEngine
+});
+
+module.exports = Object.assign(module.exports, {
+  ID,
+  Schema,
+  Model
 });
