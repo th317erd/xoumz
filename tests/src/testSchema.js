@@ -1,30 +1,35 @@
-import Schema from './schema';
-import { User, Dependent } from './models';
-import { JSONEngine } from './engines';
+import util from 'util';
+import { prettify } from '../../src/utils';
+import { Schema, SchemaTypes } from '../../src';
 
-(async function(t) {
-  var dep = new Dependent(),
-      user = new User(),
-      JE = new JSONEngine();
+console.log('SchemaTypes: ', Schema, SchemaTypes);
 
-  user.firstName = 'Derp';
-  user.lastName = 'Bro';
 
-  dep.firstName = 'Whoa';
-  dep.lastName = 'Dude';
-  
-  console.log('Dependent schema: ', Dependent.schema());
-  console.log('User schema: ', User.schema());
 
-  var depStr = await JE.sink(dep),
-      userStr = await JE.sink(user);
+// var inspect = (val) => {
+//       return util.inspect(val, { depth: null, colors: true, showHidden: true });
+//     },
+//     schemaType1 = SchemaTypes.String
+//                       .required
+//                       .notNull
+//                       .primaryKey
+//                       .defaultValue('test')
+//                       .validate(() => true)
+//                       .field('test')
+//                       .getter((val) => prettify(val))
+//                       .context('sql', function() {
+//                         this.allowNull(true);
+//                         this.validate(() => {});
+//                       }),
+//     schemaType2 = SchemaTypes.arrayOf(schemaType1),
+//     context = 'sql';
 
-  console.log('Dependent JSON: ', depStr);
-  console.log('User JSON: ', userStr);
-
-  dep = await JE.source(depStr, Dependent);
-  user = await JE.source(userStr, User);
-
-  console.log('Dependent: ', dep);
-  console.log('User: ', user);
-})();
+// console.log('Type: ', inspect({
+//   'field': schemaType1.getProp('field', context),
+//   'notNull': schemaType1.getProp('notNull', context),
+//   'primaryKey': schemaType1.getProp('primaryKey', context),
+//   'forignKey': schemaType1.getProp('forignKey', context),
+//   'defaultValue': schemaType1.getProp('defaultValue', context),
+//   'validators': schemaType1.getProp('validators', context),
+//   'getter:value': schemaType1.getProp('getter', context)('stuff')
+// }));
