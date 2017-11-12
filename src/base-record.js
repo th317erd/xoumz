@@ -1,6 +1,10 @@
 
 (function(root) {
-  Object.assign(root, {
+  class BaseRecord {
 
+  }
+
+  Object.assign(root, {
+    BaseRecord
   });
 })(module.exports);

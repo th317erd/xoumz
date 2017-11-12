@@ -1,11 +1,7 @@
-import { User } from './user';
-
-class Dependent extends User {
-  constructor() {
-    super();
-  }
-}
-
-module.exports = Object.assign(module.exports, {
-  Dependent
-});
+module.exports = function(schemaTypes, User) {
+  return class Dependent extends User {
+    static schema() {
+      return User.schema();
+    }
+  };
+};

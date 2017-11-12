@@ -102,7 +102,7 @@ import { required } from './validators';
       return propValue;
     }
 
-    setProp(name, val, context) {
+    setProp(name, val, _opts) {
       var opts = (instanceOf(_opts, 'string')) ? { context: opts } : (_opts || {}),
           specifiedContext = getContext.call(this, opts.context),
           propName = '_' + name;
@@ -205,7 +205,7 @@ import { required } from './validators';
   }
 
   function defineSchemaType(schema, name, TypeKlass) {
-    Object.defineProperty(SchemaTypes, name, {
+    Object.defineProperty(schema, name, {
       enumerable: true,
       configurable: true,
       get: () => {

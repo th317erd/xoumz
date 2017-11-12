@@ -1,6 +1,7 @@
 {
-  "editor.quickSuggestionsDelay": 1000,
-  "editor.suggestOnTriggerCharacters": false,
-  "editor.acceptSuggestionOnEnter": "off",
-  "editor.parameterHints": false
+  "editor.quickSuggestionsDelay": 10,
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.parameterHints": false,
+  "editor.autoIndent": false
 }

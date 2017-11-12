@@ -1,15 +1,30 @@
 import util from 'util';
 import { prettify } from '../../src/utils';
 import { Schema, SchemaTypes } from '../../src';
+import { BaseRecord } from '../../src/base-record';
 
-console.log('SchemaTypes: ', Schema, SchemaTypes);
+import User from './models/user';
+import Dependent from './models/dependent';
+
+function inspect(val) {
+  return util.inspect(val, { depth: null, colors: true, showHidden: true });
+};
+
+(async function (){
+  var mySchema = new Schema(BaseRecord);
+
+  mySchema.register('User', User);
+  mySchema.register('Dependent', Dependent, 'User');
+
+  await mySchema.initialize();
+
+  console.log(inspect(mySchema.getTypeInfo('Dependent')));
+})();
 
 
 
-// var inspect = (val) => {
-//       return util.inspect(val, { depth: null, colors: true, showHidden: true });
-//     },
-//     schemaType1 = SchemaTypes.String
+// 
+//     var schemaType1 = SchemaTypes.String
 //                       .required
 //                       .notNull
 //                       .primaryKey

@@ -631,6 +631,7 @@ module.exports = Object.assign(module.exports, {
   empty,
   uid,
   uuid,
+  sizeOf,
   prettify,
   noe,
   get,
