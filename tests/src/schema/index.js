@@ -1,7 +1,7 @@
 import User from './user';
-import Dependent from './dependent';
 
-module.exports = Object.assign(module.exports, {
-  User,
-  Dependent
-});
+(function(root) {
+  Object.assign(root, {
+    User
+  });
+})(module.exports);
