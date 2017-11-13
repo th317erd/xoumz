@@ -26,6 +26,32 @@ import { required } from './validators';
     };
   }
 
+  function PARSE_FLOAT(val) {
+    var finalVal = parseFloat(('' + val).replace(/[^e\d+-.]/g, ''));
+    return (!isFinite(finalVal)) ? 0 : finalVal;
+  }
+
+  function PARSE_INT(val) {
+    return Math.round(PARSE_FLOAT(val));
+  }
+
+  function PARSE_BOOLEAN(val) {
+    if (typeof val === 'string' || val instanceof String)
+      return (('' + val).match(/^(n|no|not|null|nil|0|void|false)$/i)) ? false : true;
+    
+    return !!val;
+  }
+
+  function PARSE_STRING(val) {
+    if (val === null || val === undefined)
+      return '';
+    
+    if ((typeof val === 'number' || val instanceof Number ) && !isFinite(val))
+      return '';
+      
+    return ('' + val);
+  }
+
   class SchemaType {
     constructor(typeName) {
       const LNOP = () => { return this; },
@@ -145,12 +171,26 @@ import { required } from './validators';
   class IntegerType extends SchemaType {
     constructor() {
       super('Integer');
+
+      this.getter(PARSE_INT);
+      this.setter(PARSE_INT);
+    }
+
+    instantiate(number) {
+      return PARSE_INT(number);
     }
   }
 
   class DecimalType extends SchemaType {
     constructor() {
       super('Decimal');
+
+      this.getter(PARSE_FLOAT);
+      this.setter(PARSE_FLOAT);
+    }
+
+    instantiate(number) {
+      return PARSE_FLOAT(number);
     }
   }
 
@@ -175,12 +215,26 @@ import { required } from './validators';
   class StringType extends SchemaType {
     constructor() {
       super('String');
+
+      this.getter(PARSE_STRING);
+      this.setter(PARSE_STRING);
+    }
+
+    instantiate(val) {
+      return PARSE_STRING(val);
     }
   }
 
   class BooleanType extends SchemaType {
     constructor() {
       super('Boolean');
+
+      this.getter(PARSE_BOOLEAN);
+      this.setter(PARSE_BOOLEAN);
+    }
+
+    instantiate(val) {
+      return PARSE_BOOLEAN(val);
     }
   }
 

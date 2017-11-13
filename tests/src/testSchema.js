@@ -1,7 +1,6 @@
 import util from 'util';
 import { prettify } from '../../src/utils';
-import { Schema, SchemaTypes } from '../../src';
-import { BaseRecord } from '../../src/base-record';
+import { Application } from '../../src';
 
 import User from './models/user';
 import Dependent from './models/dependent';
@@ -11,14 +10,22 @@ function inspect(val) {
 };
 
 (async function (){
-  var mySchema = new Schema(BaseRecord);
+  var myApp = new Application();
 
-  mySchema.register('User', User);
-  mySchema.register('Dependent', Dependent, 'User');
+  await myApp.init((schema) => {
+    schema.register('User', User);
+    schema.register('Dependent', Dependent, 'User');
+  });
 
-  await mySchema.initialize();
+  var schemaTypes = myApp.getSchema().schemaTypes;
+  console.log('Integer: ', schemaTypes.Integer.instantiate(), schemaTypes.Integer.instantiate('472.654'));
+  console.log('Decimal: ', schemaTypes.Decimal.instantiate(), schemaTypes.Decimal.instantiate('454.564'));
+  console.log('Boolean: ', schemaTypes.Boolean.instantiate(), schemaTypes.Boolean.instantiate('yes'));
+  console.log('String: ', schemaTypes.String.instantiate(), schemaTypes.String.instantiate('Hello world!'));
+  console.log('User: ', schemaTypes.User.instantiate());
+  console.log('Dependent: ', schemaTypes.Dependent.instantiate());
 
-  console.log(inspect(mySchema.getTypeInfo('Dependent')));
+  console.log(inspect(myApp.getSchema().getTypeInfo('Dependent')));
 })();
 
 
