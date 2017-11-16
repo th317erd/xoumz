@@ -1,6 +1,6 @@
 import util from 'util';
 import { prettify } from '../../src/utils';
-import { Application } from '../../src';
+import { Application, MemoryConnector } from '../../src';
 
 import User from './models/user';
 import Dependent from './models/dependent';
@@ -9,23 +9,17 @@ function inspect(val) {
   return util.inspect(val, { depth: null, colors: true, showHidden: true });
 };
 
-(async function (){
+(async function () {
   var myApp = new Application();
 
-  await myApp.init((schema) => {
+  await myApp.init((schema, connectors) => {
     schema.register('User', User);
     schema.register('Dependent', Dependent, 'User');
+    connectors.register(new MemoryConnector());
   });
 
   var schemaTypes = myApp.getSchema().schemaTypes;
-  console.log('Integer: ', schemaTypes.Integer.instantiate(), schemaTypes.Integer.instantiate('472.654'));
-  console.log('Decimal: ', schemaTypes.Decimal.instantiate(), schemaTypes.Decimal.instantiate('454.564'));
-  console.log('Boolean: ', schemaTypes.Boolean.instantiate(), schemaTypes.Boolean.instantiate('yes'));
-  console.log('String: ', schemaTypes.String.instantiate(), schemaTypes.String.instantiate('Hello world!'));
-  console.log('User: ', schemaTypes.User.instantiate());
-  console.log('Dependent: ', schemaTypes.Dependent.instantiate());
-
-  console.log(inspect(myApp.getSchema().getTypeInfo('Dependent')));
+  //console.log(inspect(myApp.getSchema().getTypeInfo('Dependent')));
 })();
 
 
