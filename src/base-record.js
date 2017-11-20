@@ -36,7 +36,7 @@ import Logger from './logger';
 
         this.schema().iterateFields((field, fieldName) => {
           var val = fieldValues[fieldName];
-          this[fieldName] = field.instantiate(app.getTypeSchema(field.getTypeName('schema')), val);
+          this[fieldName] = field.instantiate(val);
         });
       } catch (e) {
         Logger.warn(`Unable to create new model: ${e.message}`, e);

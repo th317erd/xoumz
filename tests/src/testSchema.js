@@ -15,7 +15,7 @@ import Dependent from './models/dependent';
   });
 
   var schemaTypes = myApp.getSchema().schemaTypes,
-      testModel = myApp.createType('User', JSON.stringify({ firstName: 'Test', age: '56.453' }));
+      testModel = myApp.createType('User', JSON.stringify({ firstName: 'Test', age: '56.453', items: '45|23|765.345' }));
 
   //console.log(inspect(myApp.getSchema().getTypeInfo('Dependent')));
   console.log('MODEL: ', inspect(testModel));

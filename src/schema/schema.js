@@ -29,6 +29,30 @@ import * as Validators from './validators';
 
   class ModelSchema {
     constructor(_typeName, _schemaObj) {
+      function validateType(_fieldSchema) {
+        var fieldSchema = _fieldSchema;
+
+        if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType || fieldSchema instanceof Array))
+          throw new Error(`Schema field ${key} must inherit from SchemaType`);
+
+        /*if (fieldSchema instanceof Array) {
+          // Get arrayOf type
+          fieldSchema = fieldSchema[0];
+          
+          // Index zero is the type, which can be another array if multiple types
+          // So we just always make sure this "type" is an array, so we can easily
+          // Verify the types at every index
+          if (!(fieldSchema instanceof Array))
+            fieldSchema = [fieldSchema];
+
+          for (var i = 0, il = fieldSchema.length; i < il; i++) {
+            var thisFieldSchema = fieldSchema[i];
+            if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType || fieldSchema instanceof Array))
+              throw new Error(`Schema field ${key} must inherit from SchemaType`);
+          }
+        }*/
+      }
+
       var typeName = _typeName,
           schemaObj = _schemaObj;
 
@@ -47,10 +71,12 @@ import * as Validators from './validators';
       for (var i = 0, il = keys.length; i < il; i++) {
         var key = keys[i],
             fieldSchema = schemaObj[key];
-          
+
         if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType))
           throw new Error(`Schema field ${key} must inherit from SchemaType`);
 
+        fieldSchema.validateType();
+        
         if (!isArray && !fieldSchema.getProp('field'))
           fieldSchema.setProp('field', key, '*');
 
