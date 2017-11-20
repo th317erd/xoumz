@@ -1,9 +1,9 @@
 import userSchema from '../schema/user';
 
-module.exports = function(schemaTypes, BaseRecord) {
+module.exports = function(self, schemaTypes, BaseRecord) {
   return class User extends BaseRecord {
-    static schema() {
-      return userSchema(schemaTypes);
+    static schema(...args) {
+      return userSchema(...args);
     }
   };
 };

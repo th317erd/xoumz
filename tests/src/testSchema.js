@@ -1,13 +1,9 @@
-import util from 'util';
 import { prettify } from '../../src/utils';
 import { Application, MemoryConnector } from '../../src';
+import { inspect } from './utils';
 
 import User from './models/user';
 import Dependent from './models/dependent';
-
-function inspect(val) {
-  return util.inspect(val, { depth: null, colors: true, showHidden: true });
-};
 
 (async function () {
   var myApp = new Application();
@@ -18,8 +14,11 @@ function inspect(val) {
     connectors.register(new MemoryConnector());
   });
 
-  var schemaTypes = myApp.getSchema().schemaTypes;
+  var schemaTypes = myApp.getSchema().schemaTypes,
+      testModel = myApp.createType('User', JSON.stringify({ firstName: 'Test', age: '56.453' }));
+
   //console.log(inspect(myApp.getSchema().getTypeInfo('Dependent')));
+  console.log('MODEL: ', inspect(testModel));
 })();
 
 

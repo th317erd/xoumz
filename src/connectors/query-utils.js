@@ -35,7 +35,7 @@ import { definePropertyRW } from '../utils';
       var key = keys[i],
           param = params[key];
       
-      parts.push(cb.call(this, schemaType, param, key, opts));
+      parts.push(cb.call(this, param, key, schemaType, opts));
     }
 
     return parts;

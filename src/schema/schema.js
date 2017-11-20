@@ -1,26 +1,47 @@
-import { definePropertyRO, definePropertyRW, prettify, sizeOf, instanceOf, noe } from '../utils';
+import { definePropertyRO, definePropertyRW, prettify, sizeOf, instanceOf, noe, pluralOf } from '../utils';
 import * as SchemaTypes from './schema-types';
 import * as Validators from './validators';
 
 (function(root) {
-  class Schema {
-    constructor(baseRecordType) {
-      definePropertyRO(this, 'typesInfoHash', {});
+  function getBaseRecordType(opts) {
+    var BaseRecordClass = opts.baseRecordType,
+        app = opts.application;
 
-      var schemaTypes = {};
-      SchemaTypes.iterateDefaultSchemaTypes((name, type) => {
-        SchemaTypes.defineSchemaType(schemaTypes, name, type);
-      });
+    class BaseRecord extends BaseRecordClass {
+      constructor(...args) {
+        super(...args);
+      }
 
-      definePropertyRW(this, 'schemaTypes', schemaTypes);
-      definePropertyRW(this, 'baseRecordType', baseRecordType);
+      getApplication() {
+        return app;
+      }
     }
 
-    validateSchema(schemaObj) {
-      var isArray = (schemaObj instanceof Array);
+    // Copy over static methods
+    var keys = Object.keys(BaseRecordClass);
+    for (var i = 0, il = keys.length; i < il; i++) {
+      var key = keys[i];
+      BaseRecord[key] = BaseRecordClass[key];
+    }
+
+    return BaseRecord;
+  }
+
+  class ModelSchema {
+    constructor(_typeName, _schemaObj) {
+      var typeName = _typeName,
+          schemaObj = _schemaObj;
+
+      if (arguments.length < 2) {
+        schemaObj = typeName;
+        typeName = undefined;
+      }
+
+      var finalSchema = {},
+          isArray = (schemaObj instanceof Array);
 
       if (!schemaObj || !(isArray || schemaObj instanceof Object) || !sizeOf(schemaObj))
-        return 'Schema must be an array or enumerable object';
+        throw new Error('Schema must be an array or enumerable object');
 
       var keys = Object.keys(schemaObj);
       for (var i = 0, il = keys.length; i < il; i++) {
@@ -28,14 +49,70 @@ import * as Validators from './validators';
             fieldSchema = schemaObj[key];
           
         if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType))
-          return `Schema field ${key} must inherit from SchemaType`;
+          throw new Error(`Schema field ${key} must inherit from SchemaType`);
 
-        if (!isArray)
+        if (!isArray && !fieldSchema.getProp('field'))
           fieldSchema.setProp('field', key, '*');
-        
-        if (noe(fieldSchema.getProp('field', '*')))
-          return `Schema field ${key} does not specify a "field" on the root context`;
+
+        var currentField = fieldSchema.getProp('field', '*');
+        if (noe(currentField))
+          throw new Error(`Schema field ${key} does not specify a "field" on the root context`);
+
+        finalSchema[currentField] = fieldSchema;
       }
+
+      definePropertyRW(this, '_schema', finalSchema);
+
+      this.setTypeName(typeName);
+    }
+
+    setTypeName(typeName) {
+      var finalSchema = this._schema;
+      if (!noe(typeName) && !finalSchema.hasOwnProperty('_table'))
+        finalSchema['_table'] = SchemaTypes.SchemaTypes.Meta.field('_table').value(pluralOf(typeName));
+
+      definePropertyRW(this, '_typeName', typeName);
+    }
+
+    getTypeName() {
+      return this._typeName;
+    }
+  
+    getRawSchema() {
+      return this._schema;
+    }
+
+    iterateFields(cb) {
+      var schemaObj = this._schema,
+          keys = Object.keys(schemaObj);
+
+      for (var i = 0, il = keys.length; i < il; i++) {
+        var key = keys[i],
+            fieldSchema = schemaObj[key];
+
+        if (key.charAt(0) === '_')
+          continue;
+
+        cb.call(this, fieldSchema, key, this);
+      }
+    }
+  }
+
+  class Schema {
+    constructor(_opts) {
+      var opts = Object.assign({}, _opts || {});
+
+      if (!opts.application)
+        throw new Error('"application" property must be specified for Schema');
+
+      if (!opts.baseRecordType)
+        throw new Error('"baseRecordType" property must be specified for Schema');
+
+      var schemaTypes = SchemaTypes.newSchemaTypes();
+      definePropertyRO(this, 'typesInfoHash', {});
+      definePropertyRW(this, 'schemaTypes', schemaTypes);
+      definePropertyRW(this, 'baseRecordType', root.getBaseRecordType(opts));
+      definePropertyRO(this, '_schemaCache', {});
     }
 
     register(_typeName, callback, inheritsFrom) {
@@ -49,17 +126,19 @@ import * as Validators from './validators';
             }
 
             instantiate(...args) {
-              return new registrationScope.modelClass(...args);
+              var instance = new registrationScope.modelClass(registrationScope.schema, ...args);
+              return instance;
             }
           },
           registrationScope = {
             typeName: typeName,
             typeInitializer: callback,
             parentType: inheritsFrom,
-            schemaType: TypeKlass
+            schemaType: TypeKlass,
+            type: new TypeKlass()
           };
 
-      this.schemaTypes[typeName] = new TypeKlass();
+      this.schemaTypes[typeName] = registrationScope.type;
       this.typesInfoHash[typeName] = registrationScope;
     }
 
@@ -67,26 +146,43 @@ import * as Validators from './validators';
       return Promise.resolve().then(async () => {
         var typesInfoHash = this.typesInfoHash,
             callbackKeys = Object.keys(typesInfoHash),
-            schemaTypes = this.schemaTypes;
+            schemaTypes = this.schemaTypes,
+            schemaCache = this._schemaCache;
 
         for (var i = 0, il = callbackKeys.length; i < il; i++) {
           var key = callbackKeys[i],
               typeInfo = typesInfoHash[key],
               parentType = this.getTypeParentClass(typeInfo.typeName);
 
-          var modelClass = await typeInfo.typeInitializer.call(typeInfo, schemaTypes, parentType);
+          var modelClass = await typeInfo.typeInitializer.call(typeInfo, typeInfo.type, schemaTypes, parentType);
           if (!(modelClass instanceof Function))
             throw new Error(`${typeInfo.typeName}: Return value from a Schema.register call must be a class`);
 
           if (!('schema' in modelClass))
             throw new Error(`${typeInfo.typeName}: "schema" static function is required for every model class`);
 
-          var schema = typeInfo.schema = modelClass.schema(),
-              schemaError = this.validateSchema(schema);
+          // Wrap schema function in a helper function that translates and caches the schema result
+          modelClass.schema = (function(typeInfo, parentType, schemaFunc) {
+            return (function(...args) {
+              var cache = schemaCache[typeInfo.typeName];
+              if (cache)
+                return cache;
 
-          if (schemaError)
-            throw new Error(`${typeInfo.typeName}: Return value from "schema" method is invalid: ${schemaError}`);
+              var schema = schemaFunc.call(typeInfo, typeInfo.type, schemaTypes, parentType);
+              if (!(schema instanceof ModelSchema)) {
+                schema = new ModelSchema(typeInfo.typeName, schema);
+              } else {
+                schema = new schema.constructor(schema.getRawSchema());
+                schema.setTypeName(typeInfo.typeName);
+              }
 
+              schemaCache[typeInfo.typeName] = schema;
+
+              return schema;
+            }).bind(typeInfo);
+          })(typeInfo, parentType, modelClass.schema);
+            
+          typeInfo.schema = modelClass.schema();
           typeInfo.modelClass = modelClass;
         }
       });
@@ -94,6 +190,10 @@ import * as Validators from './validators';
 
     getTypeInfo(typeName) {
       return this.typesInfoHash[typeName];
+    }
+
+    getType(typeName) {
+      return this.schemaTypes[typeName];
     }
 
     getTypeParentClass(typeName) {
@@ -117,11 +217,21 @@ import * as Validators from './validators';
 
       return typeInfo.modelClass;
     }
+
+    createType(typeName, ...args) {
+      var type = this.getType(typeName);
+      if (!type)
+        throw new Error(`Unable to find schema type: ${typeName}`);
+
+      return type.instantiate(...args);
+    }
   }
 
   Object.assign(root, SchemaTypes, {
     Validators,
-    Schema
+    ModelSchema,
+    Schema,
+    getBaseRecordType
   });
 })(module.exports);
 

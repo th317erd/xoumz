@@ -96,11 +96,15 @@ import { required } from './validators';
       defineStaticProp('forignKey', false);
       defineStaticProp('required', undefined, undefined, () => { this.validate(required); });
 
-      defineProp('defaultValue', null);
+      defineProp('value', null);
       defineProp('field', null);
 
       defineProp('setter', (val) => val, undefined, root.ASSERT_TYPE('function'));
       defineProp('getter', (val) => val, undefined, root.ASSERT_TYPE('function'));
+    }
+
+    getTypeName() {
+      return this.typeName;
     }
 
     context(name, cb) {
@@ -162,10 +166,6 @@ import { required } from './validators';
 
       return this;
     }
-
-    field() {
-
-    }
   }
 
   class IntegerType extends SchemaType {
@@ -176,7 +176,7 @@ import { required } from './validators';
       this.setter(PARSE_INT);
     }
 
-    instantiate(number) {
+    instantiate(schema, number) {
       return PARSE_INT(number);
     }
   }
@@ -189,7 +189,7 @@ import { required } from './validators';
       this.setter(PARSE_FLOAT);
     }
 
-    instantiate(number) {
+    instantiate(schema, number) {
       return PARSE_FLOAT(number);
     }
   }
@@ -220,8 +220,18 @@ import { required } from './validators';
       this.setter(PARSE_STRING);
     }
 
-    instantiate(val) {
+    instantiate(schema, val) {
       return PARSE_STRING(val);
+    }
+  }
+
+  class MetaType extends SchemaType {
+    constructor() {
+      super('Meta');
+    }
+
+    instantiate(schema, val) {
+      return val;
     }
   }
 
@@ -233,7 +243,7 @@ import { required } from './validators';
       this.setter(PARSE_BOOLEAN);
     }
 
-    instantiate(val) {
+    instantiate(schema, val) {
       return PARSE_BOOLEAN(val);
     }
   }
@@ -245,7 +255,8 @@ import { required } from './validators';
           'Time': TimeType,
           'DateTime': DateTimeType,
           'String': StringType,
-          'Boolean': BooleanType
+          'Boolean': BooleanType,
+          'Meta': MetaType
         },
         SchemaTypes = {},
         NOP = () => { return SchemaTypes };
@@ -277,6 +288,10 @@ import { required } from './validators';
     }
   }
 
+  function newSchemaTypes() {
+    return Object.create(SchemaTypes);
+  }
+
   iterateDefaultSchemaTypes((name, type) => {
     defineSchemaType(SchemaTypes, name, type);
   });
@@ -290,6 +305,7 @@ import { required } from './validators';
     SchemaTypes,
     DefaultSchemaTypes,
     defineSchemaType,
-    iterateDefaultSchemaTypes
+    iterateDefaultSchemaTypes,
+    newSchemaTypes
   });
 })(module.exports);

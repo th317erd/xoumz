@@ -618,7 +618,61 @@ function humanifyArrayItems(arr) {
   }, '');
 }
 
-var uidCounter = 1;
+function getWordSafe(_word) {
+  if (!_word)
+    return _word;
+
+  var word = ('' + _word).trim().toLowerCase();
+  if (word.match(/[^a-z0-9]/i))
+    return;
+
+  return word;
+}
+
+function getPluralSingularWord(_word, mode) {
+  var word = getWordSafe(_word),
+      tables = (mode) ? [toPluralTable, toSingularTable] : [toSingularTable, toPluralTable];
+
+  // If found in the "main" table, simply return it
+  if (tables[0].hasOwnProperty(word))
+    return tables[0][word];
+
+  // If found in the secondary table, use the word from the secondary table to index the primary table
+  if (tables[1].hasOwnProperty(word))
+    return tables[0][tables[1][word]];
+  
+  // Guess at word plurality
+  var newWord = (mode) ? (word + 's') : word.replace(/(es|ies|s)$/, '');
+  
+  // Add this guess to the word tables
+  tables[0][word] = newWord;
+  tables[1][newWord] = word;
+
+  return newWord;
+}
+
+function pluralOf(word) {
+  return getPluralSingularWord(word, 1);
+}
+
+function singularOf(word) {
+  return getPluralSingularWord(word, 0);
+}
+
+function registerWord(_word, _plural) {
+  var word = getWordSafe(_word),
+      plural = getWordSafe(_plural);
+  
+  if (!word || !plural)
+    return;
+
+  toPluralTable[word] = plural;
+  toSingularTable[plural] = word;
+}
+
+var uidCounter = 1,
+    toPluralTable = {},
+    toSingularTable = {};
 
 module.exports = Object.assign(module.exports, {
   definePropertyRO,
@@ -643,5 +697,8 @@ module.exports = Object.assign(module.exports, {
   getMetaNS,
   setMetaNS,
   removeMetaNS,
-  humanifyArrayItems
+  humanifyArrayItems,
+  pluralOf,
+  singularOf,
+  registerWord
 });
