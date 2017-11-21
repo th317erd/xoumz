@@ -1,8 +1,20 @@
-import { definePropertyRO, definePropertyRW, noe, instanceOf, humanifyArrayItems } from '../utils';
-import Logger from '../logger';
-import moment from 'moment';
+module.exports = function(root, requireModule) {
+  const { definePropertyRO, definePropertyRW, noe, instanceOf, humanifyArrayItems } = requireModule('./utils');
+  const Logger = requireModule('./logger');
+  const moment = requireModule('moment');
 
-(function(root) {
+  function assertSchemaTypes(...types) {
+    return function(val, propName) {
+      if (val === undefined || val === null)
+        return null;
+
+      if (!instanceOf(val, ...types))
+        throw new Error(propName + ' must be a ' + humanifyArrayItems(types));
+
+      return val;
+    };
+  }
+
   function parseFloatValue(val) {
     var finalVal = parseFloat(('' + val).replace(/[^e\d+-.]/g, ''));
     return (!isFinite(finalVal)) ? 0 : finalVal;
@@ -230,7 +242,7 @@ import moment from 'moment';
               return type;
           }
         }, undefined, (val, name) => {
-          root.ASSERT_TYPE('function')(val, name);
+          root.assertSchemaTypes('function')(val, name);
           return val.bind(this);
         });
 
@@ -268,6 +280,7 @@ import moment from 'moment';
 
   Object.assign(root, {
     defineDefaultSchemaTypes,
+    assertSchemaTypes,
     parseFloatValue,
     parseIntegerValue,
     parseBooleanValue,
@@ -276,4 +289,4 @@ import moment from 'moment';
     parseArrayValue,
     parseOneOfValue
   });
-})(module.exports);
+};

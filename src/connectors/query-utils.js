@@ -1,6 +1,6 @@
-import { definePropertyRW } from '../utils';
-
-(function(root) {
+module.exports = function(root, requireModule) {
+  const { definePropertyRW } = requireModule('./utils');
+  
   class QueryParam {
     constructor(typeName, ...args) {
       definePropertyRW(this, 'type', typeName);
@@ -47,6 +47,6 @@ import { definePropertyRW } from '../utils';
   newQueryParamType(root, 'ONE_OF');
 
   Object.assign(root, {
-    QueryParam,
+    QueryParam
   });
-})(module.exports);
+};

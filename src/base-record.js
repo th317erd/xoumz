@@ -1,7 +1,7 @@
-import { definePropertyRW, noe } from './utils';
-import Logger from './logger';
+module.exports = function(root, requireModule) {
+  const { definePropertyRW, noe } = requireModule('./utils');
+  const Logger = requireModule('./logger');
 
-(function(root) {
   function defineModelField(field, fieldName) {
     Object.defineProperty(this, fieldName, {
       writable: true,
@@ -47,4 +47,4 @@ import Logger from './logger';
   Object.assign(root, {
     BaseRecord
   });
-})(module.exports);
+};

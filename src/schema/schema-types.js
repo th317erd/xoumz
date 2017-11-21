@@ -1,9 +1,9 @@
-import { definePropertyRO, definePropertyRW, noe, instanceOf, humanifyArrayItems } from '../utils';
-import { required } from './validators';
-import Logger from '../logger';
-import defaultSchemaTypes from './default-schema-types';
+module.exports = function(root, requireModule) {
+  const { definePropertyRO, definePropertyRW, noe, instanceOf, humanifyArrayItems } = requireModule('./utils');
+  const { required } = requireModule('./schema/validators');
+  const Logger = requireModule('./logger');
+  const defaultSchemaTypes = requireModule('./schema/default-schema-types');
 
-(function(root) {
   function getContext(_context) {
     var context = (noe(_context)) ? '*' : _context,
         specifiedContext = this._contexts[context];
@@ -14,18 +14,6 @@ import defaultSchemaTypes from './default-schema-types';
     }
     
     return specifiedContext;
-  }
-
-  function ASSERT_TYPE(...types) {
-    return function(val, propName) {
-      if (val === undefined || val === null)
-        return null;
-
-      if (!instanceOf(val, ...types))
-        throw new Error(propName + ' must be a ' + humanifyArrayItems(types));
-
-      return val;
-    };
   }
 
   class SchemaType {
@@ -90,11 +78,11 @@ import defaultSchemaTypes from './default-schema-types';
       this.defineProp('field', null);
 
       this.defineProp('setter', (val) => val, undefined, (val, name) => {
-        root.ASSERT_TYPE('function')(val, name);
+        defaultSchemaTypes.assertSchemaTypes('function')(val, name);
         return val.bind(this);
       });
       this.defineProp('getter', (val) => val, undefined, (val, name) => {
-        root.ASSERT_TYPE('function')(val, name);
+        defaultSchemaTypes.assertSchemaTypes('function')(val, name);
         return val.bind(this);
       });
     }
@@ -184,8 +172,6 @@ import defaultSchemaTypes from './default-schema-types';
     }
   }
 
-  
-
   const DefaultSchemaTypes = defaultSchemaTypes.defineDefaultSchemaTypes(SchemaType),
         SchemaTypes = {},
         NOP = () => { return SchemaTypes };
@@ -228,8 +214,7 @@ import defaultSchemaTypes from './default-schema-types';
   definePropertyRW(SchemaTypes, 'oneOf', oneOfType);
   definePropertyRW(SchemaTypes, 'arrayOf', arrayOfType);
 
-  Object.assign(root, {
-    ASSERT_TYPE,
+  Object.assign(root, defaultSchemaTypes, {
     SchemaType,
     SchemaTypes,
     DefaultSchemaTypes,
@@ -237,4 +222,4 @@ import defaultSchemaTypes from './default-schema-types';
     iterateDefaultSchemaTypes,
     newSchemaTypes
   });
-})(module.exports);
+};

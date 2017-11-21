@@ -1,9 +1,9 @@
-import { definePropertyRW } from '../utils';
-import { BaseConnector } from './base-connector';
-import queryUtils from './query-utils';
-import Logger from '../logger';
+module.exports = function(root, requireModule) {
+  const { definePropertyRW } = requireModule('./utils');
+  const { BaseConnector } = requireModule('./connectors/base-connector');
+  const queryUtils = requireModule('./connectors/query-utils');
+  const Logger = requireModule('./logger');
 
-(function(root) {
   class MemoryConnector extends BaseConnector {
     constructor(_opts) {
       var opts = Object.assign({}, _opts || {});
@@ -85,4 +85,4 @@ import Logger from '../logger';
   Object.assign(root, {
     MemoryConnector
   });
-})(module.exports);
+};

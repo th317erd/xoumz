@@ -1,6 +1,8 @@
-import { noe } from '../utils';
-
-export function required(val) {
-  if (noe(val))
-    throw new Error('Value required');
-}
+module.exports = function(root, requireModule) {
+  const { noe } = requireModule('./utils');
+  
+  function required(val) {
+    if (noe(val))
+      throw new Error('Value required');
+  }
+};

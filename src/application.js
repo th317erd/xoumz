@@ -1,30 +1,58 @@
-import { definePropertyRW } from './utils';
-import { Schema, SchemaTypes } from './schema';
-import { BaseRecord } from './base-record';
-import { ConnectorCollection } from './connectors';
+import { requireModule as baseRequireModule } from './base';
 
 (function(root) {
   class Application {
     constructor(_opts) {
-      var opts = Object.assign({}, _opts || {}, { application: this });
+      var opts = Object.assign({ plugins: [] }, _opts || {}, { application: this });
+      if (!(opts.plugins instanceof Array))
+        opts.plugins = [opts.plugins];
 
-      definePropertyRW(this, 'options', opts);
+      const requireModule = baseRequireModule.bind(opts);
+      Object.defineProperty(this, '_modules', {
+        writable: false,
+        enumerable: false,
+        configurable: false,
+        value: {}
+      });
 
-      if (!opts.baseRecordType)
-        opts.baseRecordType = BaseRecord;
+      Object.defineProperty(this, 'requireModule', {
+        writable: false,
+        enumerable: false,
+        configurable: false,
+        value: requireModule
+      });
 
-      if (!opts.schema)
-        opts.schema = new Schema(opts);
+      const Logger = requireModule('./logger');
+      const Utils = requireModule('./utils');
+      const Schema = requireModule('./schema');
+      const BaseRecord = requireModule('./base-record');
+      const ConnectorCollection = requireModule('./connectors');
 
-      if (!opts.connectors)
-        opts.connectors = new ConnectorCollection(opts);
+      Object.assign(this, {
+        Logger,
+        Utils,
+        Schema,
+        BaseRecord,
+        ConnectorCollection
+      });
+
+      Utils.definePropertyRW(this, 'options', opts);
     }
       
     async init(cb) {
       var opts = this.options,
           schema = opts.schema;
 
-      await cb.call(this, schema, opts.connectors, opts.baseRecordType, this.options);
+      if (!opts.baseRecordType)
+        opts.baseRecordType = this.BaseRecord.BaseRecord;
+
+      if (!opts.schema)
+        schema = opts.schema = new this.Schema.Schema(opts);
+
+      if (!opts.connectors)
+        opts.connectors = new this.ConnectorCollection.ConnectorCollection(opts);
+
+      await cb.call(this, this, schema, opts.connectors, opts.baseRecordType, this.options);
       await schema.initialize();
     }
 

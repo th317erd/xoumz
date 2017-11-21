@@ -1,6 +1,6 @@
-import { definePropertyRW } from '../utils';
+module.exports = function(root, requireModule) {
+  const { definePropertyRW } = requireModule('./utils');
 
-(function(root) {
   class BaseConnector {
     constructor(_opts) {
       var opts = Object.assign({}, _opts || {});
@@ -23,4 +23,4 @@ import { definePropertyRW } from '../utils';
   Object.assign(root, {
     BaseConnector
   });
-})(module.exports);
+};

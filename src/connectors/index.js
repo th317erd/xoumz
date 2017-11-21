@@ -1,8 +1,8 @@
-import { definePropertyRW } from '../utils';
-import * as BaseConnector from './base-connector';
-import * as MemoryConnector from './memory-connector';
+module.exports = function(root, requireModule) {
+  const { definePropertyRW } = requireModule('./utils');
+  const BaseConnector = requireModule('./connectors/base-connector');
+  const MemoryConnector = requireModule('./connectors/memory-connector');
 
-(function(root) {
   class ConnectorCollection {
     constructor() {
       definePropertyRW(this, 'connectors', []);
@@ -19,4 +19,4 @@ import * as MemoryConnector from './memory-connector';
   Object.assign(root, BaseConnector, MemoryConnector, {
     ConnectorCollection
   });
-})(module.exports);
+};

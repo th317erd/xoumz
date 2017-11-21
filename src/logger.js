@@ -1,5 +1,5 @@
 
-(function(root) {
+module.exports = function(root, requireModule) {
   function error(...args) {
     console.error(...args);
   }
@@ -22,4 +22,4 @@
     info,
     debug
   });
-})(module.exports);
+};
