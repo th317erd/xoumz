@@ -1,5 +1,7 @@
 import { definePropertyRO, definePropertyRW, noe, instanceOf, humanifyArrayItems } from '../utils';
 import { required } from './validators';
+import Logger from '../logger';
+import defaultSchemaTypes from './default-schema-types';
 
 (function(root) {
   function getContext(_context) {
@@ -24,85 +26,6 @@ import { required } from './validators';
 
       return val;
     };
-  }
-
-  function PARSE_FLOAT(val) {
-    var finalVal = parseFloat(('' + val).replace(/[^e\d+-.]/g, ''));
-    return (!isFinite(finalVal)) ? 0 : finalVal;
-  }
-
-  function PARSE_INT(val) {
-    return Math.round(PARSE_FLOAT(val));
-  }
-
-  function PARSE_BOOLEAN(val) {
-    if (typeof val === 'string' || val instanceof String)
-      return (('' + val).match(/^(n|no|not|null|nil|0|void|false)$/i)) ? false : true;
-    
-    return !!val;
-  }
-
-  function PARSE_STRING(val) {
-    if (val === null || val === undefined)
-      return '';
-    
-    if ((typeof val === 'number' || val instanceof Number ) && !isFinite(val))
-      return '';
-      
-    return ('' + val);
-  }
-
-  function PARSE_ARRAY(_val) {
-    function parseArrayItems(val) {
-      if (val instanceof String || typeof val === 'string') {
-        var delimiter = this.getProp('delimiter');
-
-        if (!delimiter)
-          return [val];
-
-        var items = [],
-            startIndex = 0,
-            lastIndex = 0,
-            index = val.indexOf(delimiter),
-            skipIndex = false;
-
-        if (index < 0)
-          return [val];
-
-        while(index >= 0) {
-          skipIndex = (delimiter.length === 1 && index > 0 && val.charAt(index - 1) === '\\');
-          
-          if (!skipIndex) {
-            items.push(val.substring(startIndex, index).replace('\\' + delimiter, delimiter));
-            startIndex = index + delimiter.length;
-          }
-          
-          lastIndex = index + delimiter.length;
-          index = val.indexOf(delimiter, lastIndex + 1);
-        }
-
-        if (startIndex <= val.length)
-          items.push(val.substring(startIndex).replace('\\' + delimiter, delimiter));
-
-        return items;
-      }
-
-      return [val];
-    }
-
-    var val = (_val instanceof Array) ? _val : parseArrayItems.call(this, _val),
-        finalVal = [],
-        type = this.internalType;
-    
-    for (var i = 0, il = val.length; i < il; i++) {
-      var thisVal = val[i];
-      if (thisVal === null || thisVal === undefined)
-        continue;
-
-      finalVal.push(type.instantiate(thisVal));
-    }
-
-    return finalVal;
   }
 
   class SchemaType {
@@ -253,151 +176,26 @@ import { required } from './validators';
       return this;
     }
 
-    validateType() {
+    validateSchema() {
+    }
+
+    isValidValue(val) {
+      return false;
     }
   }
 
-  class IntegerType extends SchemaType {
-    constructor() {
-      super('Integer');
+  
 
-      this.getter(PARSE_INT);
-      this.setter(PARSE_INT);
-    }
-
-    instantiate(number) {
-      return PARSE_INT.call(this, number);
-    }
-  }
-
-  class DecimalType extends SchemaType {
-    constructor() {
-      super('Decimal');
-
-      this.getter(PARSE_FLOAT);
-      this.setter(PARSE_FLOAT);
-    }
-
-    instantiate(number) {
-      return PARSE_FLOAT.call(this, number);
-    }
-  }
-
-  class DateTimeType extends SchemaType {
-    constructor() {
-      super('DateTime');
-    }
-  }
-
-  class DateType extends SchemaType {
-    constructor() {
-      super('Date');
-    }
-  }
-
-  class TimeType extends SchemaType {
-    constructor() {
-      super('Time');
-    }
-  }
-
-  class StringType extends SchemaType {
-    constructor() {
-      super('String');
-
-      this.getter(PARSE_STRING);
-      this.setter(PARSE_STRING);
-    }
-
-    instantiate(val) {
-      return PARSE_STRING.call(this, val);
-    }
-  }
-
-  class BooleanType extends SchemaType {
-    constructor() {
-      super('Boolean');
-
-      this.getter(PARSE_BOOLEAN);
-      this.setter(PARSE_BOOLEAN);
-    }
-
-    instantiate(val) {
-      return PARSE_BOOLEAN.call(this, val);
-    }
-  }
-
-  class MetaType extends SchemaType {
-    constructor() {
-      super('Meta');
-    }
-
-    instantiate(val) {
-      return val;
-    }
-  }
-
-  class ArrayOfType extends SchemaType {
-    constructor(type) {
-      super('ArrayOf');
-
-      this.defineProp('delimiter', '|');
-
-      definePropertyRO(this, 'internalType', type);
-
-      this.getter(PARSE_ARRAY);
-      this.setter(PARSE_ARRAY);
-    }
-
-    instantiate(val) {
-      return PARSE_ARRAY.call(this, val);
-    }
-
-    validateType() {
-      var fieldSchema = this.internalType;
-      if (!fieldSchema || !(fieldSchema instanceof SchemaType))
-        throw new Error(`Schema field ${key} must inherit from SchemaType`);
-    }
-  }
-
-  class OneOfType extends SchemaType {
-    constructor(...types) {
-      super('OneOf');
-
-      this.getter(PARSE_ONEOF);
-      this.setter(PARSE_ONEOF);
-    }
-
-    instantiate(val) {
-      return PARSE_ONEOF.call(this, val);
-    }
-
-    validateType() {
-      var fieldSchema = this.internalType;
-      if (!fieldSchema || !(fieldSchema instanceof SchemaType))
-        throw new Error(`Schema field ${key} must inherit from SchemaType`);
-    }
-  }
-
-  const DefaultSchemaTypes = {
-          'Integer': IntegerType,
-          'Decimal': DecimalType,
-          'Date': DateType,
-          'Time': TimeType,
-          'DateTime': DateTimeType,
-          'String': StringType,
-          'Boolean': BooleanType,
-          'Meta': MetaType
-        },
+  const DefaultSchemaTypes = defaultSchemaTypes.defineDefaultSchemaTypes(SchemaType),
         SchemaTypes = {},
         NOP = () => { return SchemaTypes };
 
   function oneOfType(...types) {
-    return new OneOfType(...types);
+    return new DefaultSchemaTypes.OneOf(...types);
   }
 
   function arrayOfType(type) {
-    return new ArrayOfType(type);
+    return new DefaultSchemaTypes.Array(type);
   }
 
   function defineSchemaType(schema, name, TypeKlass) {
