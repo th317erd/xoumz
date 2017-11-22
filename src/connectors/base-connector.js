@@ -9,6 +9,7 @@ module.exports = function(root, requireModule) {
       definePropertyRW(this, 'context', undefined, () => this.options.context, (val) => this.options.context = val);
       definePropertyRW(this, 'readable', undefined, () => this.options.read, (val) => this.options.read = val);
       definePropertyRW(this, 'writable', undefined, () => this.options.write, (val) => this.options.write = val);
+      definePropertyRW(this, 'primary', undefined, () => this.options.primary, (val) => this.options.primary = val);
     }
 
     async query() {

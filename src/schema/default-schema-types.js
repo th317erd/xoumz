@@ -229,6 +229,7 @@ module.exports = function(root, requireModule) {
       }
     }
 
+    // TODO: Complete oneOf schema type
     class OneOfType extends SchemaType {
       constructor(...types) {
         super('OneOf');

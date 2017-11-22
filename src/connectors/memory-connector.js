@@ -1,8 +1,9 @@
 module.exports = function(root, requireModule) {
-  const { definePropertyRW } = requireModule('./utils');
+  const { definePropertyRW, instanceOf, noe, getProp } = requireModule('./utils');
   const { BaseConnector } = requireModule('./connectors/base-connector');
   const queryUtils = requireModule('./connectors/query-utils');
   const Logger = requireModule('./logger');
+  const Schema = requireModule('./schema');
 
   class MemoryConnector extends BaseConnector {
     constructor(_opts) {
@@ -10,7 +11,7 @@ module.exports = function(root, requireModule) {
       if (!opts.context)
         opts.context = 'memory';
 
-      super(opts);
+      super({ ...opts, read: true, write: true });
 
       definePropertyRW(this, 'tables', {});
     }
@@ -19,37 +20,45 @@ module.exports = function(root, requireModule) {
       return this.tables[table] || [];
     }
 
-    async query(schemaType, params, _opts) {
+    getTable(schema) {
+      var tableField = schema.getFieldProp('_table', 'value', 'memory');
+      return (tableField) ? tableField : 'default';
+    }
+
+    async query(schema, params, _opts) {
       var opts = _opts || {},
           finalOptions = [],
           filterOps = [];
 
-      if (!schemaType || !(schemaType.schema instanceof Function))
-        throw new Error('First argument to connector "query" must be a model type');
+      if (!schema || !(schema instanceof Schema.ModelSchema)) {
+        console.log(schema);
+        throw new Error('First argument to connector "query" must be a model schema');
+      }
         
-      var schema = schemaType.schema(),
-          tableName = schema.getTable();
+      var tableName = this.getTable(schema);
 
       if (noe(tableName))
         throw new Error(`${schema.getTypeName()} model doesn't specify a valid database table / bucket`);
 
-      iterateQueryParams(schemaType, params, (param, key, schemaType, opts) => {
+      queryUtils.iterateQueryParams(schema, params, (param, key, schema, opts) => {
         if (!schema.hasField(key))
           Logger.warn(`Query field ${key} specified by ${schema.getTypeName()} model schema doesn't have a field named ${key}`);
 
-        filterOps.push({ param, field: key });
+        filterOps.push(param);
       }, opts);
 
-      return getTableItems(tableName).filter((item) => {
+      return this.getTableItems(tableName).filter((item) => {
         for (var i = 0, il = filterOps.length; i < il; i++) {
           var filterOp = filterOps[i],
-              filterOpArgs = filterOp.value,
-              type = filterOp.type,
-              fieldValue = U.get(item, filterOp.field);
+              filteOpField = filterOp.field,
+              filterOpValue = filterOp.value,
+              filterOpArgs = filterOp.args,
+              filterOpType = filterOp.type,
+              fieldValue = getProp(item, filteOpField);
 
-          if (type === 'EQ') {
-            var isStrict = !!filterOpArgs[1],
-                filterBy = filterOpArgs[0];
+          if (filterOpType === 'EQ') {
+            var isStrict = !!filterOpArgs[0],
+                filterBy = filterOpValue;
 
             if (!isStrict) {
               filterBy = ('' + filterBy).toLowerCase();
@@ -72,7 +81,7 @@ module.exports = function(root, requireModule) {
         throw new Error('Trying to write an unknown model type to connector');
         
       var schema = data.schema(),
-          tableName = schema.getTable(),
+          tableName = this.getTable(schema),
           table = this.tables[tableName];
 
       if (!table)

@@ -22,6 +22,11 @@ import testPlugin from './test-plugin';
   var schemaTypes = myApp.getSchema().schemaTypes,
       testModel = myApp.createType('User', JSON.stringify({ firstName: 'Test', age: '56.453', items: '45|23|765.345' }));
 
+  testModel.save();
+
   //console.log(inspect(myApp.getSchema().getTypeInfo('Dependent')));
   myApp.Logger.debug('MODEL: ', inspect(testModel));
+
+  var testModelLoaded = await myApp.loadType('User', { firstName: 'Test' });
+  myApp.Logger.debug('MODEL: ', inspect(testModelLoaded));
 })();

@@ -42,6 +42,16 @@ module.exports = function(root, requireModule) {
         Logger.warn(`Unable to create new model: ${e.message}`, e);
       }
     }
+
+    save(_opts) {
+      var application = this.getApplication();
+      return application.saveType(this.schema(), this, _opts);
+    }
+
+    where(params, _opts) {
+      var application = this.getApplication();
+      return application.loadType(this.schema(), params, _opts);
+    }
   }
 
   Object.assign(root, {

@@ -122,6 +122,21 @@ module.exports = function(root, requireModule) {
         cb.call(this, fieldSchema, key, this);
       }
     }
+
+    getField(fieldName) {
+      var schemaObj = this._schema;
+      return schemaObj[fieldName];
+    }
+
+    hasField(fieldName) {
+      var schemaObj = this._schema;
+      return schemaObj.hasOwnProperty(fieldName);
+    }
+
+    getFieldProp(fieldName, propName, opts) {
+      var field = this.getField(fieldName);
+      return field.getProp(propName, opts);
+    }
   }
 
   class Schema {
@@ -220,6 +235,14 @@ module.exports = function(root, requireModule) {
 
     getType(typeName) {
       return this.schemaTypes[typeName];
+    }
+
+    getModelSchema(typeName) {
+      var typeInfo = this.getTypeInfo(typeName);
+      if (!typeInfo)
+        return;
+
+      return typeInfo.modelClass.schema();
     }
 
     getTypeParentClass(typeName) {
