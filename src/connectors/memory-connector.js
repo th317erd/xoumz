@@ -1,9 +1,9 @@
 module.exports = function(root, requireModule) {
-  const { definePropertyRW, instanceOf, noe, getProp } = requireModule('./utils');
+  const { definePropertyRW, instanceOf, noe, getProp, sizeOf } = requireModule('./utils');
   const { BaseConnector } = requireModule('./connectors/base-connector');
   const queryUtils = requireModule('./connectors/query-utils');
   const Logger = requireModule('./logger');
-  const Schema = requireModule('./schema');
+  const { ModelSchema } = requireModule('./schema');
 
   class MemoryConnector extends BaseConnector {
     constructor(_opts) {
@@ -25,19 +25,19 @@ module.exports = function(root, requireModule) {
       return (tableField) ? tableField : 'default';
     }
 
-    introspectModelType(schema, params, _opts) {
+    introspectModelType(schema, data, _opts) {
       var opts = _opts || {};
-      return schema.introspectModelType({ modelType: opts.modelType, ...queryUtils.paramsToRawObject(params) });
+      return schema.introspectModelType(data, opts);
     }
 
     async query(schema, params, _opts) {
       var opts = _opts || {},
           finalOptions = [],
           filterOps = [],
-          modelSchema = schema.introspectModelType({ modelType: opts.modelType, ...queryUtils.paramsToRawObject(params) });
+          modelSchema = this.introspectModelType(schema, queryUtils.paramsToRawObject(params), opts);
 
-      if (!modelSchema || !(modelSchema instanceof Schema.ModelSchema))
-        throw new Error('First argument to connector "query" must be a model schema');
+      if (!(modelSchema instanceof ModelSchema))
+        throw new Error(`Connector (${this.context}) error: Can not query data: unkown model type`);
         
       var tableName = this.getTable(modelSchema);
 
@@ -79,18 +79,22 @@ module.exports = function(root, requireModule) {
     }
 
     async write(schema, data, _opts) {
-      var opts = _opts || {};
+      if (!data || !instanceOf(data, 'object') || !sizeOf(data))
+        return;
 
-      if (!data || !(data.schema instanceof Function))
-        throw new Error('Trying to write an unknown model type to connector');
-        
-      var modelSchema = data.schema(),
-          tableName = this.getTable(modelSchema),
+      var opts = _opts || {},
+          modelSchema = this.introspectModelType(schema, data, opts);
+          
+      if (!(modelSchema instanceof ModelSchema))
+        throw new Error(`Connector (${this.context}) error: Can not write data: unkown model type`);
+
+      var tableName = this.getTable(modelSchema),
           table = this.tables[tableName];
 
       if (!table)
         table = this.tables[tableName] = [];
       
+      console.log('Writing type: ', modelSchema.getTypeName());
       table.push(data);
     }
   }

@@ -36,7 +36,10 @@ module.exports = function(root, requireModule) {
                 throw new Error(`Unable to set ${name} on ${this.getProp('field')}. Schema has been locked.`);
               this.setProp(name, altValue, this._context); return this;
             },
-          this.LNOP
+          (val) => {
+            this.setProp(name, val, this._context);
+            return this;
+          }
         );
       });
 

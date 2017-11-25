@@ -12,6 +12,10 @@ module.exports = function(root, requireModule) {
       definePropertyRW(this, 'primary', undefined, () => this.options.primary, (val) => this.options.primary = val);
     }
 
+    getContext() {
+      return this.context;
+    }
+
     introspectModelType(schema, params, opts) {
       throw new Error(`Connector [${this.context}] doesn't support introspection`);
     }

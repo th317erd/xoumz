@@ -26,7 +26,7 @@ import { requireModule as baseRequireModule } from './base';
       const Utils = requireModule('./utils');
       const Schema = requireModule('./schema');
       const SchemaTypes = requireModule('./schema/schema-types');
-      const BaseRecord = requireModule('./base-record');
+      const { BaseRecord } = requireModule('./base-record');
       const ConnectorCollection = requireModule('./connectors');
       const QueryUtils = requireModule('./connectors/query-utils');
 
@@ -48,19 +48,21 @@ import { requireModule as baseRequireModule } from './base';
           schema = opts.schema;
 
       if (!opts.baseRecordType)
-        opts.baseRecordType = this.BaseRecord.BaseRecord;
+        opts.baseRecordType = this.BaseRecord;
 
-      if (!opts.schema)
-        schema = opts.schema = new (this.wrapClass(this.Schema.Schema))(opts);
-      else
+      opts.baseRecordType = this.wrapClass(opts.baseRecordType);
+      
+      if (!opts.schema) {
+        var schemaClass = this.wrapClass(this.Schema.Schema);
+        schema = opts.schema = new schemaClass(opts);
+      } else {
         this.injectApplicationHelpers(opts.schema);
+      }
 
       if (!opts.connectors)
         opts.connectors = new (this.wrapClass(this.ConnectorCollection.ConnectorCollection))(opts);
       else
         this.injectApplicationHelpers(opts.connectors);
-
-      opts.baseRecordType = this.wrapClass(opts.baseRecordType);
 
       await cb.call(this, this, schema, opts.connectors, opts.baseRecordType, this.options);
       await schema.initialize();
@@ -74,11 +76,24 @@ import { requireModule as baseRequireModule } from './base';
 
     wrapClass(Klass) {
       var opts = this.options;
-      return class GenericWrappedClass extends Klass {
+      var wrappedKlass = class GenericWrappedClass extends Klass {
+        constructor(...args) {
+          super(...args);
+        }
+
         getApplication() {
           return opts.application;
         }
       };
+
+      // Copy over static methods
+      var keys = Object.keys(Klass);
+      for (var i = 0, il = keys.length; i < il; i++) {
+        var key = keys[i];
+        wrappedKlass[key] = Klass[key];
+      }
+
+      return wrappedKlass;
     }
 
     getSchema() {
