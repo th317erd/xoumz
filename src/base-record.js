@@ -24,9 +24,7 @@ module.exports = function(root, requireModule) {
     }
 
     onCreate(_fieldValues) {
-      var fieldValues = _fieldValues;
-      if (noe(fieldValues))
-        return;
+      var fieldValues = _fieldValues || {};
 
       try {
         if (typeof fieldValues === 'string' || fieldValues instanceof String)
@@ -35,8 +33,9 @@ module.exports = function(root, requireModule) {
         var app = this.getApplication();
 
         this.schema().iterateFields((field, fieldName) => {
-          var val = fieldValues[fieldName];
-          this[fieldName] = field.instantiate(val);
+          var val = fieldValues[fieldName],
+              setter = field.getProp('setter');
+          this[fieldName] = field.instantiate(setter(val));
         });
       } catch (e) {
         Logger.warn(`Unable to create new model: ${e.message}`, e);
@@ -45,12 +44,17 @@ module.exports = function(root, requireModule) {
 
     save(_opts) {
       var application = this.getApplication();
-      return application.saveType(this.schema(), this, _opts);
+      return application.saveType(this, _opts);
     }
 
     where(params, _opts) {
-      var application = this.getApplication();
-      return application.loadType(this.schema(), params, _opts);
+      var opts = _opts || {},
+          application = this.getApplication();
+
+      return application.loadType(params, {
+        ...opts,
+        type: this
+      });
     }
   }
 

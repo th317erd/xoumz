@@ -12,12 +12,16 @@ module.exports = function(root, requireModule) {
       definePropertyRW(this, 'primary', undefined, () => this.options.primary, (val) => this.options.primary = val);
     }
 
-    async query() {
-      throw new Error(`Connector [#{this.context}] doesn't support queries`);
+    introspectModelType(schema, params, opts) {
+      throw new Error(`Connector [${this.context}] doesn't support introspection`);
     }
 
-    async write() {
-      throw new Error(`Connector [#{this.context}] doesn't support writing`);
+    async query(schema, params, opts) {
+      throw new Error(`Connector [${this.context}] doesn't support queries`);
+    }
+
+    async write(schema, params, opts) {
+      throw new Error(`Connector [${this.context}] doesn't support writing`);
     }
   }
 

@@ -1,5 +1,5 @@
 module.exports = function(root, requireModule) {
-  const { definePropertyRO, definePropertyRW, prettify, sizeOf, instanceOf, noe, pluralOf } = requireModule('./utils');
+  const { definePropertyRO, definePropertyRW, prettify, sizeOf, instanceOf, noe, pluralOf, uuid } = requireModule('./utils');
   const SchemaTypes = requireModule('./schema/schema-types');
   const Validators = requireModule('./schema/validators');
 
@@ -28,7 +28,7 @@ module.exports = function(root, requireModule) {
   }
 
   class ModelSchema {
-    constructor(_typeName, _schemaObj) {
+    constructor(typeInfo, schemaObj) {
       function validateSchema(_fieldSchema) {
         var fieldSchema = _fieldSchema;
 
@@ -53,24 +53,25 @@ module.exports = function(root, requireModule) {
         }*/
       }
 
-      var typeName = _typeName,
-          schemaObj = _schemaObj;
-
-      if (arguments.length < 2) {
-        schemaObj = typeName;
-        typeName = undefined;
-      }
+      if (!typeInfo || !schemaObj)
+        throw new Error('Type info and type schema required to instantiate a ModelSchema class');
 
       var finalSchema = {},
-          isArray = (schemaObj instanceof Array);
+          isArray = (schemaObj instanceof Array),
+          typeName = typeInfo.typeName,
+          schemaCode,
+          fieldSchema;
 
       if (!schemaObj || !(isArray || schemaObj instanceof Object) || !sizeOf(schemaObj))
         throw new Error('Schema must be an array or enumerable object');
 
-      var keys = Object.keys(schemaObj);
+      var keys = Object.keys(schemaObj),
+          hasPrimaryKey = false;
+
       for (var i = 0, il = keys.length; i < il; i++) {
-        var key = keys[i],
-            fieldSchema = schemaObj[key];
+        var key = keys[i];
+        
+        fieldSchema = schemaObj[key];
 
         if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType))
           throw new Error(`Schema field ${key} must inherit from SchemaType`);
@@ -80,16 +81,52 @@ module.exports = function(root, requireModule) {
         if (!isArray && !fieldSchema.getProp('field'))
           fieldSchema.setProp('field', key, '*');
 
+        if (fieldSchema.getProp('primaryKey'))
+          hasPrimaryKey = true;
+
         var currentField = fieldSchema.getProp('field', '*');
         if (noe(currentField))
           throw new Error(`Schema field ${key} does not specify a "field" on the root context`);
 
+        if (currentField === '_schemaCode')
+          schemaCode = fieldSchema.getProp('value', '*');
+
+        // Don't allow any more changes to this field
+        fieldSchema.lock();
         finalSchema[currentField] = fieldSchema;
       }
 
+      if (noe(schemaCode)) {
+        schemaCode = this.getDefaultSchemaCode(typeName);
+        fieldSchema = this.getDefaultSchemaCodeField(schemaCode);
+        finalSchema['_schemaCode'] = fieldSchema;
+        fieldSchema.lock();
+      }
+
+      if (!hasPrimaryKey) {
+        fieldSchema = this.getDefaultPrimaryKeyField(schemaCode);
+        finalSchema['id'] = fieldSchema;
+        fieldSchema.lock();
+      }
+
+      definePropertyRW(this, '_typeInfo', typeInfo);
       definePropertyRW(this, '_schema', finalSchema);
 
       this.setTypeName(typeName);
+    }
+
+    getDefaultSchemaCode(typeName) {
+      return typeName;
+    }
+
+    getDefaultSchemaCodeField(schemaCode) {
+      return SchemaTypes.SchemaTypes.Meta.value(schemaCode).field('_schemaCode');
+    }
+
+    getDefaultPrimaryKeyField(schemaCode) {
+      return SchemaTypes.SchemaTypes.String.primaryKey.setter((val) => {
+        return (val) ? val : (schemaCode + ':' + uuid());
+      }).field('id');
     }
 
     setTypeName(typeName) {
@@ -98,6 +135,14 @@ module.exports = function(root, requireModule) {
         finalSchema['_table'] = SchemaTypes.SchemaTypes.Meta.field('_table').value(pluralOf(typeName));
 
       definePropertyRW(this, '_typeName', typeName);
+    }
+
+    getTypeInfo() {
+      return this._typeInfo;
+    }
+
+    getSchemaType() {
+      return this.getTypeInfo().type;
     }
 
     getTypeName() {
@@ -209,19 +254,19 @@ module.exports = function(root, requireModule) {
               if (cache)
                 return cache;
 
-              var schema = schemaFunc.call(typeInfo, typeInfo.type, schemaTypes, parentType);
+              var schema = schemaFunc.call(this, typeInfo.type, schemaTypes, parentType, typeInfo);
               if (!(schema instanceof ModelSchema)) {
-                schema = new ModelSchema(typeInfo.typeName, schema);
+                schema = new ModelSchema(typeInfo, schema);
               } else {
-                schema = new schema.constructor(schema.getRawSchema());
+                schema = new schema.constructor(schema.getTypeInfo(), schema.getRawSchema());
                 schema.setTypeName(typeInfo.typeName);
               }
 
               schemaCache[typeInfo.typeName] = schema;
 
               return schema;
-            }).bind(typeInfo);
-          })(typeInfo, parentType, modelClass.schema);
+            }).bind(this);
+          }).call(this, typeInfo, parentType, modelClass.schema);
             
           typeInfo.schema = modelClass.schema();
           typeInfo.modelClass = modelClass;
@@ -229,18 +274,79 @@ module.exports = function(root, requireModule) {
       });
     }
 
-    getTypeInfo(typeName) {
-      return this.typesInfoHash[typeName];
+    getTypeNameFromSchemaCode(schemaCode) {
+      return schemaCode;
     }
 
-    getType(typeName) {
-      return this.schemaTypes[typeName];
+    introspectModelType(fieldValues) {
+      if (noe(fieldValues))
+        return;
+
+      // See if we can figure out a type
+      var typeName = fieldValues.modelType;
+      if (!typeName && fieldValues.id) {
+        var parts = ('' + fieldValues).match(/^(\w+):.*$/);
+        if (parts && !noe(parts[1])) {
+          var schemaCode = parts[1];
+          typeName = this.getTypeNameFromSchemaCode(schemaCode);
+        }
+      }
+
+      if (typeName) {
+        var typeInfo = this.getTypeInfo(typeName);
+        if (typeInfo)
+          return this.getModelSchema(typeName);
+      }
+
+      // If we couldn't find it a type then make our best guess
+      var typesInfoHash = this.typesInfoHash,
+          keys = Object.keys(typesInfoHash),
+          typesList = [];
+
+      for (var i = 0, il = keys.length; i < il; i++) {
+        var key = keys[i],
+            typeInfo = typesInfoHash[key];
+        
+        if (typeInfo.type.getProp('primitive'))
+          continue;
+
+        var weight = 0,
+            modelSchema = this.getModelSchema(typeInfo.typeName);
+        
+        modelSchema.iterateFields((field, key) => {
+          if (fieldValues.hasOwnProperty(key))
+            weight++;
+          else
+            weight -= 10;
+        });
+
+        typesList.push({ modelSchema, weight });
+      }
+
+      // Fint closest match by weight
+      typesList = typesList.sort((a, b) => {
+        var x = a.weight,
+            y = b.weight;
+        
+        return (x == y) ? 0 : (x < y) ? 1 : -1;
+      });
+
+      var typeGuess = typesList[0];
+      return (typeGuess) ? typeGuess.modelSchema : undefined;
+    }
+
+    getTypeInfo(_typeName) {
+      var typeName = _typeName;
+      if (typeName instanceof ModelSchema)
+        typeName = typeName.getTypeName();
+        
+      return this.typesInfoHash[typeName];
     }
 
     getModelSchema(typeName) {
       var typeInfo = this.getTypeInfo(typeName);
       if (!typeInfo)
-        return;
+        throw new Error(`Unable to find schema for model type: ${typeName}`);
 
       return typeInfo.modelClass.schema();
     }
@@ -267,12 +373,20 @@ module.exports = function(root, requireModule) {
       return typeInfo.modelClass;
     }
 
-    createType(typeName, ...args) {
-      var type = this.getType(typeName);
-      if (!type)
-        throw new Error(`Unable to find schema type: ${typeName}`);
+    async createType(typeName, ...args) {
+      var typeInfo = this.getTypeInfo(typeName);
+      if (!typeInfo)
+        throw new Error(`Unable to find schema for model type: ${typeName}`);
 
-      return type.instantiate(...args);
+      return typeInfo.type.instantiate(...args);
+    }
+
+    async saveType(connector, model, _opts) {
+      return connector.write(this, model, _opts);
+    }
+
+    async loadType(connector, params, _opts) {
+      return connector.query(this, params, _opts);
     }
   }
 

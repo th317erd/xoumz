@@ -20,13 +20,14 @@ import testPlugin from './test-plugin';
   });
 
   var schemaTypes = myApp.getSchema().schemaTypes,
-      testModel = myApp.createType('User', JSON.stringify({ firstName: 'Test', age: '56.453', items: '45|23|765.345' }));
+      testModel = await myApp.createType('User', JSON.stringify({ firstName: 'Test', age: '56.453', items: '45|23|765.345' }));
 
   testModel.save();
 
   //console.log(inspect(myApp.getSchema().getTypeInfo('Dependent')));
   myApp.Logger.debug('MODEL: ', inspect(testModel));
+  //myApp.Logger.debug('MODEL SCHEMA: ', inspect(testModel), inspect(myApp.getSchema().introspectType({ id: 'USER:1234', firstName: null, age: 65 })));
 
-  var testModelLoaded = await myApp.loadType('User', { firstName: 'Test' });
+  var testModelLoaded = await myApp.loadType({ firstName: 'Test' }, { type: 'User' });
   myApp.Logger.debug('MODEL: ', inspect(testModelLoaded));
 })();

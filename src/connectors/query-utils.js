@@ -55,6 +55,26 @@ module.exports = function(root, requireModule) {
     return parts;
   }
 
+  function paramsToRawObject(params) {
+    if (noe(params))
+      return {};
+
+    var keys = Object.keys(params),
+        obj = {};
+
+    for (var i = 0, il = keys.length; i < il; i++) {
+      var key = keys[i],
+          param = params[key];
+      
+      if (param instanceof QueryParam)
+        obj[key] = param.value;
+      else
+        obj[key] = param;
+    }
+
+    return obj;
+  }
+
   newQueryParamType(root, 'EQ');
   newQueryParamType(root, 'CONTAINS');
   newQueryParamType(root, 'RANGE');
@@ -62,6 +82,7 @@ module.exports = function(root, requireModule) {
 
   Object.assign(root, {
     iterateQueryParams,
+    paramsToRawObject,
     QueryParam
   });
 };

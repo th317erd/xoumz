@@ -51,15 +51,25 @@ import { requireModule as baseRequireModule } from './base';
         opts.baseRecordType = this.BaseRecord.BaseRecord;
 
       if (!opts.schema)
-        schema = opts.schema = new this.Schema.Schema(opts);
+        schema = opts.schema = new (this.wrapClass(this.Schema.Schema))(opts);
+      else
+        this.injectApplicationHelpers(opts.schema);
 
       if (!opts.connectors)
-        opts.connectors = new this.ConnectorCollection.ConnectorCollection(opts);
+        opts.connectors = new (this.wrapClass(this.ConnectorCollection.ConnectorCollection))(opts);
+      else
+        this.injectApplicationHelpers(opts.connectors);
 
       opts.baseRecordType = this.wrapClass(opts.baseRecordType);
 
       await cb.call(this, this, schema, opts.connectors, opts.baseRecordType, this.options);
       await schema.initialize();
+    }
+
+    injectApplicationHelpers(instance) {
+      if (!(instance.getApplication instanceof Function)) {
+        instance.getApplication = () => this;
+      }
     }
 
     wrapClass(Klass) {
@@ -75,21 +85,21 @@ import { requireModule as baseRequireModule } from './base';
       return this.options.schema;
     }
 
-    getTypeSchema(_schemaType, ...args) {
-      var schemaType = _schemaType;
-      if (schemaType instanceof this.Schema.ModelSchema)
-        return schemaType;
+    getTypeSchema(_modelType, ...args) {
+      var modelType = _modelType;
+      if (modelType instanceof this.Schema.ModelSchema)
+        return modelType;
 
-      if (schemaType instanceof this.options.baseRecordType)
-        return schemaType.schema();
+      if (modelType instanceof this.options.baseRecordType)
+        return modelType.schema();
 
       var schema = this.getSchema(...args),
-          schemaType = schema.getModelSchema(('' + schemaType));
+          modelType = schema.getModelSchema(('' + modelType));
 
-      if (!schemaType)
-        throw new Error(`Unknown schema type ${_schemaType}`);
+      if (!modelType)
+        throw new Error(`Unknown schema type ${_modelType}`);
 
-      return schemaType;
+      return modelType;
     }
 
     getConnectors(filter) {
@@ -100,34 +110,34 @@ import { requireModule as baseRequireModule } from './base';
       return this.options.connectors.getConnector(filter);
     }
 
-    createType(typeName, ...args) {
+    async createType(modelType, ...args) {
       var schema = this.getSchema();
-      return schema.createType(typeName, ...args);
+      return schema.createType(modelType, ...args);
     }
 
-    async saveType(_schemaType, model, _opts) {
-      var schemaType = this.getTypeSchema(_schemaType),
+    async saveType(model, _opts) {
+      var schema = this.getSchema(),
           connectors = this.getConnectors({ writable: true }),
           opts = _opts || {},
           promises = [];
 
       for (var i = 0, il = connectors.length; i < il; i++) {
         var connector = connectors[i];
-        promises.push(connector.write(model, opts));
+        promises.push(schema.saveType(connector, model, opts));
       }
 
-      return await Promise.all(promises);
+      return Promise.all(promises);
     }
 
-    async loadType(_schemaType, params, _opts) {
-      var schemaType = this.getTypeSchema(_schemaType),
+    async loadType(params, _opts) {
+      var schema = this.getSchema(),
           opts = _opts || {},
           connector = this.getConnector({ readable: true, primary: true });
 
       if (!connector)
         throw new Error('No readable connector found');
 
-      return await connector.query(schemaType, params, opts);
+      return schema.loadType(connector, params, opts);
     }
   }
 

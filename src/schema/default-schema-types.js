@@ -113,6 +113,7 @@ module.exports = function(root, requireModule) {
       constructor() {
         super('Integer');
 
+        this.primitive = true;
         this.getter(root.parseIntegerValue);
         this.setter(root.parseIntegerValue);
       }
@@ -134,6 +135,7 @@ module.exports = function(root, requireModule) {
       constructor() {
         super('Decimal');
 
+        this.primitive = true;
         this.getter(root.parseFloatValue);
         this.setter(root.parseFloatValue);
       }
@@ -153,6 +155,8 @@ module.exports = function(root, requireModule) {
     class DateTimeType extends SchemaType {
       constructor() {
         super('DateTime');
+
+        this.primitive = true;
 
         // Defualt format is ISO
         this.defineProp('format', undefined);
@@ -174,6 +178,7 @@ module.exports = function(root, requireModule) {
       constructor() {
         super('String');
 
+        this.primitive = true;
         this.getter(root.parseStringValue);
         this.setter(root.parseStringValue);
       }
@@ -187,6 +192,7 @@ module.exports = function(root, requireModule) {
       constructor() {
         super('Boolean');
 
+        this.primitive = true;
         this.getter(root.parseBooleanValue);
         this.setter(root.parseBooleanValue);
       }
@@ -209,6 +215,8 @@ module.exports = function(root, requireModule) {
     class ArrayOfType extends SchemaType {
       constructor(type) {
         super('ArrayOf');
+
+        this.primitive = true;
 
         this.defineProp('delimiter', '|');
 
@@ -234,6 +242,8 @@ module.exports = function(root, requireModule) {
       constructor(...types) {
         super('OneOf');
 
+        this.primitive = true;
+        
         // Default introflection
         this.defineProp('introflect', (val) => {
           var types = this.internalTypes;

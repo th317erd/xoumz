@@ -33,7 +33,7 @@ module.exports = function(root, requireModule) {
             ? () => { _cb.call(this); return this; }
             : () => {
               if (this._lock)
-                throw new Error(`Unable to set ${name} on ${this.field}. Schema has been locked.`);
+                throw new Error(`Unable to set ${name} on ${this.getProp('field')}. Schema has been locked.`);
               this.setProp(name, altValue, this._context); return this;
             },
           this.LNOP
@@ -44,7 +44,7 @@ module.exports = function(root, requireModule) {
         definePropertyRW(defaultContext, '_' + name, defaultValue);
         definePropertyRO(this, name, (_cb instanceof Function) ? _cb : (_val) => {
           if (this._lock)
-            throw new Error(`Unable to set ${name} on ${this.field}. Schema has been locked.`);
+            throw new Error(`Unable to set ${name} on ${this.getProp('field')}. Schema has been locked.`);
 
           var val = _val;
           if (_valueChecker instanceof Function)
@@ -73,6 +73,7 @@ module.exports = function(root, requireModule) {
       this.defineStaticProp('primaryKey', false);
       this.defineStaticProp('forignKey', false);
       this.defineStaticProp('required', undefined, undefined, () => { this.validate(required); });
+      this.defineStaticProp('primitive', false);
 
       this.defineProp('value', null);
       this.defineProp('field', null);

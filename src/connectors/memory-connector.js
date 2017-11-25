@@ -20,29 +20,33 @@ module.exports = function(root, requireModule) {
       return this.tables[table] || [];
     }
 
-    getTable(schema) {
-      var tableField = schema.getFieldProp('_table', 'value', 'memory');
+    getTable(modelSchema) {
+      var tableField = modelSchema.getFieldProp('_table', 'value', 'memory');
       return (tableField) ? tableField : 'default';
+    }
+
+    introspectModelType(schema, params, _opts) {
+      var opts = _opts || {};
+      return schema.introspectModelType({ modelType: opts.modelType, ...queryUtils.paramsToRawObject(params) });
     }
 
     async query(schema, params, _opts) {
       var opts = _opts || {},
           finalOptions = [],
-          filterOps = [];
+          filterOps = [],
+          modelSchema = schema.introspectModelType({ modelType: opts.modelType, ...queryUtils.paramsToRawObject(params) });
 
-      if (!schema || !(schema instanceof Schema.ModelSchema)) {
-        console.log(schema);
+      if (!modelSchema || !(modelSchema instanceof Schema.ModelSchema))
         throw new Error('First argument to connector "query" must be a model schema');
-      }
         
-      var tableName = this.getTable(schema);
+      var tableName = this.getTable(modelSchema);
 
       if (noe(tableName))
-        throw new Error(`${schema.getTypeName()} model doesn't specify a valid database table / bucket`);
+        throw new Error(`${modelSchema.getTypeName()} model doesn't specify a valid database table / bucket`);
 
-      queryUtils.iterateQueryParams(schema, params, (param, key, schema, opts) => {
-        if (!schema.hasField(key))
-          Logger.warn(`Query field ${key} specified by ${schema.getTypeName()} model schema doesn't have a field named ${key}`);
+      queryUtils.iterateQueryParams(modelSchema, params, (param, key, modelSchema, opts) => {
+        if (!modelSchema.hasField(key))
+          Logger.warn(`Query field ${key} specified by ${modelSchema.getTypeName()} model schema doesn't have a field named ${key}`);
 
         filterOps.push(param);
       }, opts);
@@ -74,14 +78,14 @@ module.exports = function(root, requireModule) {
       });
     }
 
-    async write(data, _opts) {
+    async write(schema, data, _opts) {
       var opts = _opts || {};
 
       if (!data || !(data.schema instanceof Function))
         throw new Error('Trying to write an unknown model type to connector');
         
-      var schema = data.schema(),
-          tableName = this.getTable(schema),
+      var modelSchema = data.schema(),
+          tableName = this.getTable(modelSchema),
           table = this.tables[tableName];
 
       if (!table)
