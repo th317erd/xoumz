@@ -1,7 +1,7 @@
 {
-  "name": "api-system",
+  "name": "xoumz",
   "version": "1.0.0",
-  "description": "Generic powerful flexible API layer",
+  "description": "Generic, powerful, flexible API / ORM layer",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
