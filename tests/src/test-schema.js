@@ -1,4 +1,4 @@
-import { Application } from '../../src';
+import { Application } from '../../lib';
 import { inspect } from './utils';
 
 import User from './models/user';
