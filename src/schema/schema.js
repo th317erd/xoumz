@@ -31,6 +31,33 @@ module.exports = function(root, requireModule) {
               definePropertyRW(this, 'Model', undefined, () => this.modelClass, (val) => { this.modelClass = val; });
             }
 
+            decompose(_val, _opts) {
+              var opts = _opts || {},
+                  inputValue = _val,
+                  modelSchema = registrationScope.modelClass.schema(),
+                  context = opts.context,
+                  rawVal = {},
+                  subVals = [{ type: registrationScope.type, value: rawVal }];
+
+              modelSchema.iterateFields((field, fieldName) => {
+                var getter = field.getProp('getter', context),
+                    value = getter(inputValue[fieldName]),
+                    fieldTypeName = field.getTypeName();
+
+                if (!field.getProp('primitive') || fieldTypeName === 'Array' || fieldTypeName === 'Variant') {
+                  console.log('Decomposing: ', fieldName, fieldTypeName, value);
+                  subVals.push(field.decompose(value, opts));
+                  return true;
+                }
+
+                var contextFieldName = field.getProp('field', context);
+                rawVal[contextFieldName] = value;
+              });
+
+              console.log('Subvals: ', subVals);
+              return subVals;
+            }
+
             instantiate(...args) {
               var instance = new registrationScope.modelClass(registrationScope.schema, ...args);
               return instance;
@@ -221,6 +248,21 @@ module.exports = function(root, requireModule) {
     }
 
     async saveType(connector, model, _opts) {
+      function writeToConntector(items, conntector, conntectorOpts) {
+        var promises = [];
+
+        console.log('Dumping: ', items);
+        for (var i = 0, il = items.length; i < il; i++) {
+          var item = items[i];
+          if (item instanceof Array)
+            promises.push(writeToConntector.call(this, item, conntector, conntectorOpts));
+          else
+            promises.push(conntector.write(this, item.value, { ...conntectorOpts, modelType: item.type }));
+        }
+
+        return Promise.all(promises);
+      }
+
       if (!model)
         return;
 
@@ -233,27 +275,8 @@ module.exports = function(root, requireModule) {
       if (opts.bulk)
         return connector.write(this, model, opts);
 
-      var connectorContext = connector.getContext(),
-          rawData = {},
-          promises = [];
-
-      modelSchema.iterateFields((field, fieldName) => {
-        var getter = field.getProp('getter', connectorContext),
-            value = model[fieldName];
-
-        if (!field.getProp('primitive')) {
-          var subModelSchema = this.getModelSchema(field.getTypeName());
-          promises.push(this.saveType(connector, value, { ...opts, modelSchema: subModelSchema }));
-          return true;
-        }
-
-        var fieldName = field.getProp('field', connectorContext);
-        rawData[fieldName] = getter(value);
-      });
-
-      promises.push(connector.write(this, rawData, { ...opts, modelSchema }));
-
-      return Promise.all(promises);
+      var decomposedItems = modelSchema.decompose(model, { context: connector.getContext() })
+      return writeToConntector.call(this, decomposedItems, connector, opts);
     }
 
     async loadType(connector, params, _opts) {

@@ -88,6 +88,8 @@ module.exports = function(root, requireModule) {
       if (!(modelSchema instanceof ModelSchema))
         throw new Error(`Connector (${this.context}) error: Can not write data: unkown model type`);
 
+      console.log('Writing to connector: ', data);
+      
       var tableName = this.getTable(modelSchema),
           table = this.tables[tableName];
 

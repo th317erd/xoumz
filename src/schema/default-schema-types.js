@@ -118,6 +118,10 @@ module.exports = function(root, requireModule) {
         this.setter(root.parseIntegerValue);
       }
 
+      decompose(val) {
+        return { type: this, value: root.parseIntegerValue.call(this, val) };
+      }
+
       instantiate(number) {
         return root.parseIntegerValue.call(this, number);
       }
@@ -138,6 +142,10 @@ module.exports = function(root, requireModule) {
         this.primitive = true;
         this.getter(root.parseFloatValue);
         this.setter(root.parseFloatValue);
+      }
+
+      decompose(val) {
+        return { type: this, value: root.parseFloatValue.call(this, val) };
       }
 
       instantiate(number) {
@@ -165,6 +173,10 @@ module.exports = function(root, requireModule) {
         this.setter(root.parseDateTimeValue);
       }
 
+      decompose(val) {
+        return { type: this, value: root.parseDateTimeValue.call(this, val).toISOString() };
+      }
+
       instantiate(val) {
         return root.parseDateTimeValue.call(this, val);
       }
@@ -183,6 +195,10 @@ module.exports = function(root, requireModule) {
         this.setter(root.parseStringValue);
       }
 
+      decompose(val) {
+        return { type: this, value: root.parseStringValue.call(this, val) };
+      }
+
       instantiate(val) {
         return root.parseStringValue.call(this, val);
       }
@@ -197,6 +213,10 @@ module.exports = function(root, requireModule) {
         this.setter(root.parseBooleanValue);
       }
 
+      decompose(val) {
+        return { type: this, value: root.parseBooleanValue.call(this, val) };
+      }
+
       instantiate(val) {
         return root.parseBooleanValue.call(this, val);
       }
@@ -207,6 +227,10 @@ module.exports = function(root, requireModule) {
         super('Meta');
       }
 
+      decompose(val) {
+        return { type: this, value: val };
+      }
+
       instantiate(val) {
         return val;
       }
@@ -214,7 +238,7 @@ module.exports = function(root, requireModule) {
 
     class ArrayOfType extends SchemaType {
       constructor(type) {
-        super('ArrayOf');
+        super('Array');
 
         this.primitive = true;
 
@@ -224,6 +248,24 @@ module.exports = function(root, requireModule) {
 
         this.getter(root.parseArrayValue);
         this.setter(root.parseArrayValue);
+      }
+
+      decompose(_val, _opts) {
+        var val = _val;
+        if (noe(val))
+          return;
+
+        if (!(val instanceof Array))
+          val = [val];
+
+        var opts = _opts || {},
+            parts = [],
+            internalType = this.internalType;
+
+        for (var i = 0, il = val.length; i < il; i++)
+          parts.push(internalType.decompose(val[i], opts));
+
+        return parts;
       }
 
       instantiate(val) {
@@ -240,7 +282,7 @@ module.exports = function(root, requireModule) {
     // TODO: Complete oneOf schema type
     class OneOfType extends SchemaType {
       constructor(...types) {
-        super('OneOf');
+        super('Variant');
 
         this.primitive = true;
         
@@ -261,6 +303,10 @@ module.exports = function(root, requireModule) {
 
         this.getter(root.parseOneOfValue);
         this.setter(root.parseOneOfValue);
+      }
+
+      decompose(val) {
+        // TODO: Complete
       }
 
       instantiate(val) {

@@ -174,6 +174,14 @@ module.exports = function(root, requireModule) {
     isValidValue(val) {
       return false;
     }
+
+    decompose(val) {
+      throw new Error('Can not decompose a base SchemaType');
+    }
+
+    instantiate(val) {
+      throw new Error('Can not instantiate a base SchemaType');
+    }
   }
 
   const DefaultSchemaTypes = defaultSchemaTypes.defineDefaultSchemaTypes(SchemaType),
