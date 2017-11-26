@@ -64,8 +64,13 @@ import { requireModule as baseRequireModule } from './base';
       else
         this.injectApplicationHelpers(opts.connectors);
 
-      await cb.call(this, this, schema, opts.connectors, opts.baseRecordType, this.options);
-      await schema.initialize();
+      try {
+        await cb.call(this, this, schema, opts.connectors, opts.baseRecordType, this.options);
+        await schema.initialize();
+      } catch (e) {
+        this.Logger.error(e);
+        throw e;
+      }
     }
 
     injectApplicationHelpers(instance) {
@@ -100,21 +105,14 @@ import { requireModule as baseRequireModule } from './base';
       return this.options.schema;
     }
 
-    getTypeSchema(_modelType, ...args) {
-      var modelType = _modelType;
-      if (modelType instanceof this.Schema.ModelSchema)
-        return modelType;
+    getSchemaType(...args) {
+      var schema = this.getSchema();
+      return schema.getSchemaType(...args);
+    }
 
-      if (modelType instanceof this.options.baseRecordType)
-        return modelType.schema();
-
-      var schema = this.getSchema(...args),
-          modelType = schema.getModelSchema(('' + modelType));
-
-      if (!modelType)
-        throw new Error(`Unknown schema type ${_modelType}`);
-
-      return modelType;
+    getModelSchema(...args) {
+      var schema = this.getSchema();
+      return schema.getModelSchema(...args);
     }
 
     getConnectors(filter) {

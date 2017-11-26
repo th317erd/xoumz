@@ -108,18 +108,25 @@ module.exports = function(root, requireModule) {
     return type.instantiate(val);
   }
 
+  function decomposePrimitive(val, _opts) {
+    var opts = _opts || {};
+        getter = this.getProp('getter', opts.context);
+
+    return { schemaType: this, value: { value: getter(val) } };
+  }
+
   function defineDefaultSchemaTypes(SchemaType) {
     class IntegerType extends SchemaType {
-      constructor() {
-        super('Integer');
+      constructor(schema) {
+        super(schema, 'Integer');
 
         this.primitive = true;
         this.getter(root.parseIntegerValue);
         this.setter(root.parseIntegerValue);
       }
 
-      decompose(val) {
-        return { type: this, value: root.parseIntegerValue.call(this, val) };
+      decompose(val, opts) {
+        return decomposePrimitive.call(this, val, opts);
       }
 
       instantiate(number) {
@@ -136,16 +143,16 @@ module.exports = function(root, requireModule) {
     }
 
     class DecimalType extends SchemaType {
-      constructor() {
-        super('Decimal');
+      constructor(schema) {
+        super(schema, 'Decimal');
 
         this.primitive = true;
         this.getter(root.parseFloatValue);
         this.setter(root.parseFloatValue);
       }
 
-      decompose(val) {
-        return { type: this, value: root.parseFloatValue.call(this, val) };
+      decompose(val, opts) {
+        return decomposePrimitive.call(this, val, opts);
       }
 
       instantiate(number) {
@@ -161,8 +168,8 @@ module.exports = function(root, requireModule) {
     }
 
     class DateTimeType extends SchemaType {
-      constructor() {
-        super('DateTime');
+      constructor(schema) {
+        super(schema, 'DateTime');
 
         this.primitive = true;
 
@@ -173,8 +180,8 @@ module.exports = function(root, requireModule) {
         this.setter(root.parseDateTimeValue);
       }
 
-      decompose(val) {
-        return { type: this, value: root.parseDateTimeValue.call(this, val).toISOString() };
+      decompose(val, opts) {
+        return decomposePrimitive.call(this, val, opts);
       }
 
       instantiate(val) {
@@ -187,16 +194,16 @@ module.exports = function(root, requireModule) {
     }
 
     class StringType extends SchemaType {
-      constructor() {
-        super('String');
+      constructor(schema) {
+        super(schema, 'String');
 
         this.primitive = true;
         this.getter(root.parseStringValue);
         this.setter(root.parseStringValue);
       }
 
-      decompose(val) {
-        return { type: this, value: root.parseStringValue.call(this, val) };
+      decompose(val, opts) {
+        return decomposePrimitive.call(this, val, opts);
       }
 
       instantiate(val) {
@@ -205,16 +212,16 @@ module.exports = function(root, requireModule) {
     }
 
     class BooleanType extends SchemaType {
-      constructor() {
-        super('Boolean');
+      constructor(schema) {
+        super(schema, 'Boolean');
 
         this.primitive = true;
         this.getter(root.parseBooleanValue);
         this.setter(root.parseBooleanValue);
       }
 
-      decompose(val) {
-        return { type: this, value: root.parseBooleanValue.call(this, val) };
+      decompose(val, opts) {
+        return decomposePrimitive.call(this, val, opts);
       }
 
       instantiate(val) {
@@ -223,12 +230,12 @@ module.exports = function(root, requireModule) {
     }
 
     class MetaType extends SchemaType {
-      constructor() {
-        super('Meta');
+      constructor(schema) {
+        super(schema, 'Meta');
       }
 
-      decompose(val) {
-        return { type: this, value: val };
+      decompose(val, opts) {
+        return decomposePrimitive.call(this, val, opts);
       }
 
       instantiate(val) {
@@ -237,8 +244,8 @@ module.exports = function(root, requireModule) {
     }
 
     class ArrayOfType extends SchemaType {
-      constructor(type) {
-        super('Array');
+      constructor(schema, type) {
+        super(schema, 'Array');
 
         this.primitive = true;
 
@@ -251,6 +258,9 @@ module.exports = function(root, requireModule) {
       }
 
       decompose(_val, _opts) {
+        if (!this.parentSchema)
+          return;
+
         var val = _val;
         if (noe(val))
           return;
@@ -260,10 +270,14 @@ module.exports = function(root, requireModule) {
 
         var opts = _opts || {},
             parts = [],
-            internalType = this.internalType;
+            internalType = this.internalType,
+            modelType = this.parentSchema.getModelSchema(internalType.getTypeName());
+
+        if (!modelType)
+          return;
 
         for (var i = 0, il = val.length; i < il; i++)
-          parts.push(internalType.decompose(val[i], opts));
+          parts.push(modelType.decompose(val[i], opts));
 
         return parts;
       }
@@ -279,10 +293,14 @@ module.exports = function(root, requireModule) {
       }
     }
 
+    Object.assign(ArrayOfType, {
+      requiresArguments: true
+    });
+
     // TODO: Complete oneOf schema type
     class OneOfType extends SchemaType {
-      constructor(...types) {
-        super('Variant');
+      constructor(schema, ...types) {
+        super(schema, 'Variant');
 
         this.primitive = true;
         
@@ -323,6 +341,10 @@ module.exports = function(root, requireModule) {
       }
     }
 
+    Object.assign(OneOfType, {
+      requiresArguments: true
+    });
+
     return {
       'Integer': IntegerType,
       'Decimal': DecimalType,
@@ -330,7 +352,7 @@ module.exports = function(root, requireModule) {
       'String': StringType,
       'Boolean': BooleanType,
       'Meta': MetaType,
-      'Array': ArrayOfType,
+      'ArrayOf': ArrayOfType,
       'OneOf': OneOfType
     };
   }

@@ -17,7 +17,8 @@ module.exports = function(root, requireModule) {
   }
 
   class SchemaType {
-    constructor(typeName) {
+    constructor(schema, typeName) {
+      definePropertyRW(this, 'parentSchema', schema);
       definePropertyRW(this, 'LNOP', () => this);
       definePropertyRW(this, 'defineStaticProp', (name, defaultValue, _altValue, _cb) => {
         var altValue = (_altValue === undefined) ? !defaultValue : _altValue;
@@ -93,6 +94,13 @@ module.exports = function(root, requireModule) {
 
     getTypeName() {
       return this.typeName;
+    }
+
+    getTypeModel() {
+      if (!this.parentSchema)
+        return;
+
+      return this.parentSchema.getModelSchema(this.getTypeName());
     }
 
     context(name, cb) {
@@ -185,18 +193,9 @@ module.exports = function(root, requireModule) {
   }
 
   const DefaultSchemaTypes = defaultSchemaTypes.defineDefaultSchemaTypes(SchemaType),
-        SchemaTypes = {},
-        NOP = () => { return SchemaTypes };
+        NOP = () => { return DefaultSchemaTypes };
 
-  function oneOfType(...types) {
-    return new DefaultSchemaTypes.OneOf(...types);
-  }
-
-  function arrayOfType(type) {
-    return new DefaultSchemaTypes.Array(type);
-  }
-
-  function defineSchemaType(schema, name, TypeKlass) {
+  function definePrimitiveSchemaType(schema, name, TypeKlass) {
     Object.defineProperty(schema, name, {
       enumerable: true,
       configurable: true,
@@ -207,31 +206,19 @@ module.exports = function(root, requireModule) {
     });
   }
 
-  function iterateDefaultSchemaTypes(cb) {
+  function iteratePrimitiveSchemaTypes(cb) {
     var keys = Object.keys(DefaultSchemaTypes);
     for (var i = 0, il = keys.length; i < il; i++) {
       var key = keys[i];
-      cb(key, DefaultSchemaTypes[key]);  
+      if (cb(key, DefaultSchemaTypes[key]) === false)
+        break;
     }
   }
 
-  function newSchemaTypes() {
-    return Object.create(SchemaTypes);
-  }
-
-  iterateDefaultSchemaTypes((name, type) => {
-    defineSchemaType(SchemaTypes, name, type);
-  });
-
-  definePropertyRW(SchemaTypes, 'oneOf', oneOfType);
-  definePropertyRW(SchemaTypes, 'arrayOf', arrayOfType);
-
   Object.assign(root, defaultSchemaTypes, {
     SchemaType,
-    SchemaTypes,
     DefaultSchemaTypes,
-    defineSchemaType,
-    iterateDefaultSchemaTypes,
-    newSchemaTypes
+    definePrimitiveSchemaType,
+    iteratePrimitiveSchemaTypes
   });
 };

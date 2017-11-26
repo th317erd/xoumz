@@ -1,35 +1,18 @@
 module.exports = function(root, requireModule) {
   const { definePropertyRW, sizeOf, noe, pluralOf, uuid } = requireModule('./utils');
-  const SchemaTypes = requireModule('./schema/schema-types');
+  const { SchemaType } = requireModule('./schema/schema-types');
   
-  class ModelSchema {
-    constructor(typeInfo, schemaObj) {
+  class SchemaTypeModel {
+    constructor(parentSchema, typeInfo, schemaObj) {
       function validateSchema(_fieldSchema) {
         var fieldSchema = _fieldSchema;
 
-        if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType || fieldSchema instanceof Array))
+        if (!fieldSchema || !(fieldSchema instanceof SchemaType || fieldSchema instanceof Array))
           throw new Error(`Schema field ${key} must inherit from SchemaType`);
-
-        /*if (fieldSchema instanceof Array) {
-          // Get arrayOf type
-          fieldSchema = fieldSchema[0];
-          
-          // Index zero is the type, which can be another array if multiple types
-          // So we just always make sure this "type" is an array, so we can easily
-          // Verify the types at every index
-          if (!(fieldSchema instanceof Array))
-            fieldSchema = [fieldSchema];
-
-          for (var i = 0, il = fieldSchema.length; i < il; i++) {
-            var thisFieldSchema = fieldSchema[i];
-            if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType || fieldSchema instanceof Array))
-              throw new Error(`Schema field ${key} must inherit from SchemaType`);
-          }
-        }*/
       }
 
-      if (!typeInfo || !schemaObj)
-        throw new Error('Type info and type schema required to instantiate a ModelSchema class');
+      if (!parentSchema || !typeInfo || !schemaObj)
+        throw new Error('Parent schema, Type info, and schema type definition are required to instantiate a SchemaTypeModel class');
 
       var finalSchema = {},
           isArray = (schemaObj instanceof Array),
@@ -40,6 +23,10 @@ module.exports = function(root, requireModule) {
       if (!schemaObj || !(isArray || schemaObj instanceof Object) || !sizeOf(schemaObj))
         throw new Error('Schema must be an array or enumerable object');
 
+      definePropertyRW(this, '_parentSchema', parentSchema);
+      definePropertyRW(this, '_typeInfo', typeInfo);
+      definePropertyRW(this, '_schema', finalSchema);
+
       var keys = Object.keys(schemaObj),
           hasPrimaryKey = false;
 
@@ -48,7 +35,7 @@ module.exports = function(root, requireModule) {
         
         fieldSchema = schemaObj[key];
 
-        if (!fieldSchema || !(fieldSchema instanceof SchemaTypes.SchemaType))
+        if (!fieldSchema || !(fieldSchema instanceof SchemaType))
           throw new Error(`Schema field ${key} must inherit from SchemaType`);
 
         fieldSchema.validateSchema();
@@ -84,18 +71,27 @@ module.exports = function(root, requireModule) {
         fieldSchema.lock();
       }
 
-      definePropertyRW(this, '_typeInfo', typeInfo);
-      definePropertyRW(this, '_schema', finalSchema);
-
       this.setTypeName(typeName);
     }
 
+    getSchemaTypes() {
+      return this._parentSchema.getSchemaTypes();
+    }
+
+    getSchemaType() {
+      return this._typeInfo.schemaType;
+    }
+
+    getModelSchema() {
+      return this._typeInfo.modelType;
+    }
+
     decompose(...args) {
-      return this._typeInfo.type.decompose(...args);
+      return this.getSchemaType().decompose(...args);
     }
 
     instantiate(...args) {
-      return this._typeInfo.type.instantiate(...args);
+      return this.getSchemaType().instantiate(...args);
     }
 
     getDefaultSchemaCode(typeName) {
@@ -103,11 +99,11 @@ module.exports = function(root, requireModule) {
     }
 
     getDefaultSchemaCodeField(schemaCode) {
-      return SchemaTypes.SchemaTypes.Meta.value(schemaCode).field('_schemaCode');
+      return this.getSchemaTypes().Meta.value(schemaCode).field('_schemaCode');
     }
 
     getDefaultPrimaryKeyField(schemaCode) {
-      return SchemaTypes.SchemaTypes.String.primaryKey.setter((val) => {
+      return this.getSchemaTypes().String.primaryKey.setter((val) => {
         return (val) ? val : (schemaCode + ':' + uuid());
       }).field('id');
     }
@@ -115,17 +111,13 @@ module.exports = function(root, requireModule) {
     setTypeName(typeName) {
       var finalSchema = this._schema;
       if (!noe(typeName) && !finalSchema.hasOwnProperty('_table'))
-        finalSchema['_table'] = SchemaTypes.SchemaTypes.Meta.field('_table').value(pluralOf(typeName));
+        finalSchema['_table'] = this.getSchemaTypes().Meta.field('_table').value(pluralOf(typeName));
 
       definePropertyRW(this, '_typeName', typeName);
     }
 
     getTypeInfo() {
       return this._typeInfo;
-    }
-
-    getSchemaType() {
-      return this.getTypeInfo().type;
     }
 
     getTypeName() {
@@ -169,6 +161,6 @@ module.exports = function(root, requireModule) {
   }
 
   Object.assign(root, {
-    ModelSchema
+    SchemaTypeModel
   });
 };

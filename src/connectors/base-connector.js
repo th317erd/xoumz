@@ -16,7 +16,7 @@ module.exports = function(root, requireModule) {
       return this.context;
     }
 
-    introspectModelType(schema, params, opts) {
+    introspectSchemaType(schema, params, opts) {
       throw new Error(`Connector [${this.context}] doesn't support introspection`);
     }
 

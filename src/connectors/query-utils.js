@@ -30,7 +30,7 @@ module.exports = function(root, requireModule) {
     return Klass;
   }
 
-  function iterateQueryParams(schemaType, params, cb, _opts) {
+  function iterateQueryParams(modelType, params, cb, _opts) {
     if (noe(params))
       return;
 
@@ -49,7 +49,7 @@ module.exports = function(root, requireModule) {
         });
       }
 
-      parts.push(cb.call(this, param, key, schemaType, opts));
+      parts.push(cb.call(this, param, key, modelType, opts));
     }
 
     return parts;

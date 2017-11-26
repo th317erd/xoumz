@@ -12,8 +12,8 @@ module.exports = function(root, requireModule) {
   }
 
   class BaseRecord {
-    constructor(schema, ...args) {
-      schema.iterateFields(defineModelField.bind(this));
+    constructor(...args) {
+      this.schema().iterateFields(defineModelField.bind(this));
 
       if (this.onCreate instanceof Function)
         this.onCreate.call(this, ...args);
@@ -53,7 +53,7 @@ module.exports = function(root, requireModule) {
 
       return application.loadType(params, {
         ...opts,
-        type: this
+        modelType: this
       });
     }
   }
