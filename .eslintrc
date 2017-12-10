@@ -142,7 +142,7 @@
     "no-catch-shadow": 1,            // disallow the catch clause parameter name being the same as a variable in the outer scope (off by default in the node environment)
     "no-delete-var": 1,              // disallow deletion of variables
     "no-label-var": 1,               // disallow labels that share a name with a variable
-    "no-shadow": 1,                  // disallow declaration of variables already declared in the outer scope
+    "no-shadow": 0,                  // disallow declaration of variables already declared in the outer scope
     "no-shadow-restricted-names": 1, // disallow shadowing of names such as arguments
     "no-undef": 2,                   // disallow use of undeclared variables unless mentioned in a /*global */ block.
     "no-undefined": 0,               // disallow use of undefined variable (off by default)
@@ -168,7 +168,7 @@
     "comma-spacing": 1,
     "no-multi-spaces": 0,               // enforce one true brace style (off by default)
     "camelcase": 0,                  // require camel case names
-    "consistent-this": 1,            // enforces consistent naming when capturing the current execution context (off by default)
+    "consistent-this": 0,            // enforces consistent naming when capturing the current execution context (off by default)
     "eol-last": 1,                   // enforce newline at the end of file, with no multiple empty lines
     "func-names": 0,                 // require function expressions to have a name (off by default)
     "func-style": 0,                 // enforces use of function declarations or expressions (off by default)
@@ -211,7 +211,7 @@
     "extra-syntax/ternary-parens": 1,
 
     # Analyze plugin settings
-    "analyze/dangerous-diving": 1,
+    "analyze/dangerous-diving": 0,
 
     # Require path
     "require-path-exists/notEmpty": 2,
