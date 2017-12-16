@@ -29,7 +29,7 @@ import testPlugin from './test-plugin';
     myApp.Logger.debug('MODEL: ', inspect(testModel));
     //myApp.Logger.debug('MODEL SCHEMA: ', inspect(testModel), inspect(myApp.getSchemaEngine().introspectType({ id: 'USER:1234', firstName: null, age: 65 })));
 
-    var testModelLoaded = await myApp.loadType({ firstName: 'Test' }, { schemaType: 'User' });
+    var testModelLoaded = await myApp.loadModels({ firstName: 'Test' }, { schemaType: 'User' });
     myApp.Logger.debug('MODEL: ', inspect(testModelLoaded));
   } catch (e) {
     console.error(e);
