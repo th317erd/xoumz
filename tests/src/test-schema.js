@@ -21,7 +21,7 @@ import testPlugin from './test-plugin';
     });
 
     var schemaTypes = myApp.getSchemaEngine().schemaTypes,
-        testModel = await myApp.createType('User', JSON.stringify({ firstName: 'Test', age: '56.453', items: '45|23|765.345' }));
+        testModel = await myApp.create('User', JSON.stringify({ firstName: 'Test', age: '56.453', items: '45|23|765.345' }));
 
     testModel.save();
 
@@ -29,7 +29,7 @@ import testPlugin from './test-plugin';
     myApp.Logger.debug('MODEL: ', inspect(testModel));
     //myApp.Logger.debug('MODEL SCHEMA: ', inspect(testModel), inspect(myApp.getSchemaEngine().introspectType({ id: 'USER:1234', firstName: null, age: 65 })));
 
-    var testModelLoaded = await myApp.loadModels({ firstName: 'Test' }, { schemaType: 'User' });
+    var testModelLoaded = await myApp.load({ firstName: 'Test' }, { schemaType: 'User' });
     myApp.Logger.debug('MODEL: ', inspect(testModelLoaded));
   } catch (e) {
     console.error(e);
