@@ -1,10 +1,8 @@
-import { Application } from '../../lib';
-import { inspect } from './utils';
-
-import User from './models/user';
-import Dependent from './models/dependent';
-
-import testPlugin from './test-plugin';
+const { Application } = require('../../lib'),
+      { inspect } = require('./utils'),
+      User = require('./models/user'),
+      Dependent = require('./models/dependent'),
+      testPlugin = require('./test-plugin');
 
 (async function () {
   try {

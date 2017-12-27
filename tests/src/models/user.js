@@ -1,4 +1,4 @@
-import userSchema from '../schema/user';
+const userSchema = require('../schema/user');
 
 module.exports = function(self, schemaTypes, ModelBase) {
   return class User extends ModelBase {

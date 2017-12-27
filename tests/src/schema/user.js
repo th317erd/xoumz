@@ -1,4 +1,4 @@
-import { inspect } from '../utils';
+const { inspect } = require('../utils');
 
 module.exports = function(self, types) {
   var app = this.getApplication();

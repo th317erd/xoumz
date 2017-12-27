@@ -1,4 +1,4 @@
-import User from './user';
+const User = require('./user');
 
 (function(root) {
   Object.assign(root, {

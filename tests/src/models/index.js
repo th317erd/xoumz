@@ -1,5 +1,5 @@
-import { User } from './user';
-import { Dependent } from './dependent';
+const { User } = require('./user'),
+      { Dependent } = require('./dependent');
 
 (function(root) {
   Object.assign(root, {
