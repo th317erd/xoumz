@@ -1,6 +1,35 @@
-const { Application } = require('../../lib');
+const { Application } = require('../../lib'),
+      util = require('util');
+
+const customMatchers = {
+  toBeArray: function(util, customEqualityTesters) {
+    return {
+      compare: function(actual, expected) {
+        if (!(actual instanceof Array))
+          return { pass: false, message: `Expected ${actual} to be an instance of an Array` };
+
+        if (expected !== undefined && actual.length !== expected)
+          return { pass: false, message: `Expected Array of length ${actual.length} to be an Array of length ${expected}` };
+
+        return { pass: true, message: null };
+      }
+    };
+  },
+  toBeType: function(util, customEqualityTesters) {
+    return {
+      compare: function(actual, expected) {
+        if (!(actual instanceof expected))
+          return { pass: false, message: `Expected ${actual} to be an instance of ${expected.name}` };
+
+        return { pass: true, message: null };
+      }
+    };
+  }
+};
 
 beforeAll(function(done) {
+  jasmine.addMatchers(customMatchers);
+
   class TestApplication extends Application {
     constructor(opts) {
       super({
@@ -29,7 +58,13 @@ beforeAll(function(done) {
         return class TestModel extends ModelBase {
           static schema(self, types) {
             return {
-              'test': types.String
+              'string': types.String,
+              'integer': types.Integer,
+              'boolean': types.Boolean,
+              'date': types.Date,
+              'stringArray': types.ArrayOf(types.String),
+              'integerArray': types.ArrayOf(types.Integer),
+              'children': types.ArrayOf(types.Test)
             };
           }
         };
@@ -51,6 +86,10 @@ beforeAll(function(done) {
 
   this.app = new TestApplication();
   this.app.start();
+
+  this.inspect = function(obj) {
+    console.log(util.inspect(obj, { depth: null, colors: true }));
+  };
 });
 
 afterAll(function(done) {

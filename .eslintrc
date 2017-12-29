@@ -1,5 +1,9 @@
 // Install plugins:
 {
+  "env": {
+    "jasmine": true
+  },
+
   "parserOptions": {
     "ecmaVersion": 8,
     "sourceType": "module"
@@ -8,7 +12,8 @@
   "plugins": [
     "extra-syntax",
     "analyze",
-    "require-path-exists"
+    "require-path-exists",
+    "jasmine"
   ],
 
   // Map from global var to bool specifying if it can be redefined
