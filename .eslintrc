@@ -1,10 +1,10 @@
 // Install plugins:
 {
-  "parser": "babel-eslint",
+  "parser": "eslint",
 
   "env": {
     "es6": true,
-    "jasmine": true,
+    "jasmine": true
   },
 
   "plugins": [
