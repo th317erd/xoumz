@@ -1,10 +1,8 @@
 // Install plugins:
 {
-  "parser": "eslint",
-
-  "env": {
-    "es6": true,
-    "jasmine": true
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "sourceType": "module"
   },
 
   "plugins": [

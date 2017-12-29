@@ -4,7 +4,7 @@
   "description": "Generic, powerful, flexible API / ORM layer",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/.bin/jasmine",
     "start": "node_modules/.bin/babel-node tests/src/testSchema.js",
     "build": "node_modules/.bin/babel src -d dist ; node_modules/.bin/babel tests/src -d tests/dist"
   },
@@ -30,6 +30,7 @@
     "eslint": "^4.14.0",
     "eslint-plugin-analyze": "^1.1.2",
     "eslint-plugin-extra-syntax": "^1.0.0",
-    "eslint-plugin-require-path-exists": "git+https://github.com/th317erd/eslint-plugin-require-path-exists.git#dist"
+    "eslint-plugin-require-path-exists": "git+https://github.com/th317erd/eslint-plugin-require-path-exists.git#dist",
+    "jasmine": "^2.8.0"
   }
 }
