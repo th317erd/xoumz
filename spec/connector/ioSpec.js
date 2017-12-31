@@ -2,80 +2,10 @@ const moment = require('moment');
 
 describe('Connector IO', function() {
   beforeEach(function(done) {
-    async function construct() {
-      var model = this.model = await this.app.create('Test');
-
-      var childModel = await this.app.create('Test');
-      childModel.id = 'Test:2';
-      childModel.string = 'child test string';
-      childModel.integer = 756.78;
-      childModel.boolean = false;
-      childModel.date = moment('2017-12-31', 'YYYY-MM-DD');
-      childModel.stringArray.push('hello');
-      childModel.stringArray.push('from');
-      childModel.stringArray.push('child');
-      childModel.integerArray = [1, 42, 0];
-
-      model.id = 'Test:1';
-      model.string = 'test string';
-      model.integer = 756.23;
-      model.boolean = true;
-      model.date = moment('2017-12-29', 'YYYY-MM-DD');
-      model.stringArray.push('hello');
-      model.stringArray.push('world');
-      model.integerArray = [42, 0, 1];
-      model.children = [childModel];
-
+    (async () => {
+      this.model = await this.createTestModel();
       done();
-    }
-
-    construct.call(this);
-
-    this.testModel = function(value, datesAsMoment) {
-      expect(value.id).toBe('Test:1');
-      expect(value.boolean).toBe(true);
-      expect((datesAsMoment) ? value.date.toISOString() : value.date).toBe('2017-12-29T07:00:00.000Z');
-      expect(value.integer).toBe(756);
-      expect(value.string).toBe('test string');
-      expect(value.createdAt).toBeTruthy();
-      expect(value.updatedAt).toBeTruthy();
-      expect(value.ownerID).toBeFalsy();
-      expect(value.ownerType).toBeFalsy();
-      expect(value.ownerField).toBeFalsy();
-    };
-
-    this.testChild = function(value, datesAsMoment) {
-      expect(value.id).toBe('Test:2');
-      expect(value.boolean).toBe(false);
-      expect((datesAsMoment) ? value.date.toISOString() : value.date).toBe('2017-12-31T07:00:00.000Z');
-      expect(value.integer).toBe(757);
-      expect(value.string).toBe('child test string');
-      expect(value.createdAt).toBeTruthy();
-      expect(value.updatedAt).toBeTruthy();
-      expect(value.ownerID).toBe('Test:1');
-      expect(value.ownerType).toBe('Test');
-      expect(value.ownerField).toBe('children');
-    };
-
-    this.testString = function(value, ownerID, ownerField) {
-      expect(value.id).toMatch(/^String:[abcdef0-9-]+/);
-      expect(value.value).toBe('child');
-      expect(value.createdAt).toBeTruthy();
-      expect(value.updatedAt).toBeTruthy();
-      expect(value.ownerID).toBe(ownerID);
-      expect(value.ownerType).toBe('Test');
-      expect(value.ownerField).toBe(ownerField);
-    };
-
-    this.testInteger = function(value, ownerID, ownerField) {
-      expect(value.id).toMatch(/^Integer:[abcdef0-9-]+/);
-      expect(value.value).toBe(42);
-      expect(value.createdAt).toBeTruthy();
-      expect(value.updatedAt).toBeTruthy();
-      expect(value.ownerID).toBe(ownerID);
-      expect(value.ownerType).toBe('Test');
-      expect(value.ownerField).toBe(ownerField);
-    };
+    })();
   });
 
   describe('Internal functionality', function() {
