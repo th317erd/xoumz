@@ -79,7 +79,7 @@ describe('Connector IO', function() {
   });
 
   describe('Internal functionality', function() {
-
+    // TODO: Add more internal stress testing
   });
 
   describe('External functionality', function() {
