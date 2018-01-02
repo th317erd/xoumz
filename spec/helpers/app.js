@@ -111,7 +111,6 @@ beforeAll(function(done) {
       return model;
     };
 
-    console.log('DONE!');
     done();
   }
 
