@@ -73,7 +73,7 @@ beforeAll(function(done) {
         connectorEngine.register(new this.SQLiteConnector());
       }
 
-      async onAfterInit(schemaEngine, connectorEngine) {
+      async onAfterSchemaInit(schemaEngine, connectorEngine) {
         // Initialize SQLite memory connector
         await this.getConnector('sqlite').migrate(schemaEngine);
       }
