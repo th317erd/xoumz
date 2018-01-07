@@ -33,8 +33,19 @@ beforeAll(function(done) {
     class TestApplication extends Application {
       constructor(opts) {
         super({
-          ...(opts || {})
+          ...(opts || {}),
+          appName: 'test'
         });
+      }
+
+      async loadAppConfig() {
+        return {
+          test: {
+            http: {
+              enabled: false
+            }
+          }
+        };
       }
 
       async onStartupCheck() {
@@ -52,7 +63,10 @@ beforeAll(function(done) {
         this.Utils.getProp(this._persistentStorage, key, defaultValue);
       }
 
-      async onInit(schemaEngine, connectorEngine) {
+      async onInit() {
+        var schemaEngine = this.getSchemaEngine(),
+            connectorEngine = this.getConnectorEngine();
+
         schemaEngine.registerModelType('User', this.Models.User);
         schemaEngine.registerModelType('Test', function(ModelBase) {
           return class TestModel extends ModelBase {
@@ -73,7 +87,17 @@ beforeAll(function(done) {
         connectorEngine.register(new this.SQLiteConnector());
       }
 
-      async onAfterSchemaInit(schemaEngine, connectorEngine) {
+      async onRouteEngineInit(routeEngine) {
+        routeEngine.registerRoute((Route) => {
+          return class TestRoute extends Route {
+
+          };
+        });
+      }
+
+      async onAfterInit() {
+        var schemaEngine = this.getSchemaEngine();
+
         // Initialize SQLite memory connector
         await this.getConnector('sqlite').migrate(schemaEngine);
       }
