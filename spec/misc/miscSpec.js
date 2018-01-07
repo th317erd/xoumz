@@ -1,4 +1,5 @@
-const fs = require('fs');
+const fs = require('fs'),
+      Buffer = require('safe-buffer').Buffer;
 
 function createLargeString(size) {
   var arr = [],

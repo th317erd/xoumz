@@ -21,9 +21,11 @@
   "license": "ISC",
   "dependencies": {
     "better-sqlite3": "^4.0.3",
+    "busboy": "^0.2.14",
     "crypto-js": "^3.1.9-1",
     "janap": "^1.0.5",
     "moment": "^2.20.1",
+    "safe-buffer": "^5.1.1",
     "sqlstring": "^2.3.0"
   },
   "devDependencies": {
