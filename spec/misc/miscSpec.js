@@ -18,11 +18,16 @@ function createLargeString(size) {
 }
 
 describe('Utils', function() {
-  describe('Internal functionality', function() {
-    // TODO: Add more internal stress testing
+  describe('Utils', function() {
+    it('should be able to work with mime types', function() {
+      expect(this.app.Utils.getMimeType('test.json')).toBe('application/json');
+      expect(this.app.Utils.getMimeType('test.html')).toBe('text/html');
+      expect(this.app.Utils.getExtensionFromMimeType('application/json')).toBe('json');
+      expect(this.app.Utils.getExtensionFromMimeType('text/html')).toBe('html');
+    });
   });
 
-  describe('External functionality', function() {
+  describe('StreamableToStream', function() {
     it('should be able to convert a string to a stream', function(done) {
       var str = createLargeString(65000),
           stream = new this.app.Utils.StreamableToStream(str);
