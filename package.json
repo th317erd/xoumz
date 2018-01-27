@@ -30,7 +30,8 @@
     "sqlstring": "^2.3.0"
   },
   "devDependencies": {
-    "eslint": "^4.14.0",
+    "babel-eslint": "^8.2.1",
+    "eslint": "^4.16.0",
     "eslint-plugin-analyze": "^1.1.2",
     "eslint-plugin-extra-syntax": "^1.0.0",
     "eslint-plugin-jasmine": "^2.9.1",

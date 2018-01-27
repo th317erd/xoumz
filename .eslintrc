@@ -1,5 +1,7 @@
 // Install plugins:
 {
+  "parser": "babel-eslint",
+
   "env": {
     "jasmine": true
   },
@@ -18,41 +20,27 @@
 
   // Map from global var to bool specifying if it can be redefined
   "globals": {
-    "__BUNDLE_START_TIME__": false,
-    "__DEV__": true,
     "__dirname": false,
     "__filename": false,
-    "__fbBatchedBridgeConfig": false,
-    "alert": false,
-    "cancelAnimationFrame": false,
-    "clearImmediate": true,
+    "clearImmediate": false,
     "clearInterval": false,
     "clearTimeout": false,
     "console": false,
-    "document": false,
     "escape": false,
     "exports": false,
     "global": false,
-    "jest": false,
-    "pit": false,
     "Map": true,
     "module": false,
-    "navigator": false,
     "process": false,
     "Promise": false,
-    "requestAnimationFrame": true,
     "require": false,
-    "Set": true,
-    "setImmediate": true,
+    "Set": false,
+    "setImmediate": false,
     "setInterval": false,
     "setTimeout": false,
-    "window": false,
-    "FormData": true,
-    "XMLHttpRequest": false,
     "fetch": true,
-
-    // Flow "known-globals" annotations:
-    "Class": false
+    "Proxy": false,
+    "performance": false
   },
 
   "rules": {
@@ -93,7 +81,7 @@
     "curly": [1, "multi-or-nest", "consistent"],                      // specify curly brace conventions for all control statements
     "default-case": 0,               // require default case in switch statements (off by default)
     "dot-notation": 0,               // encourages use of dot notation whenever possible
-    "eqeqeq": 1,                     // require the use of === and !==
+    "eqeqeq": 0,                     // require the use of === and !==
     "guard-for-in": 0,               // make sure for-in loops have an if statement (off by default)
     "no-alert": 0,                   // disallow the use of alert, confirm, and prompt
     "no-caller": 1,                  // disallow use of arguments.caller or arguments.callee
@@ -210,13 +198,10 @@
     "no-bitwise": 0,                 // disallow use of bitwise operators (off by default)
     "no-plusplus": 0,                // disallow use of unary operators, ++ and -- (off by default)
 
-    # Extra Syntax Plugin Settings
     "extra-syntax/ternary-parens": 1,
 
-    # Analyze plugin settings
     "analyze/dangerous-diving": 0,
 
-    # Require path
     "require-path-exists/notEmpty": 2,
     "require-path-exists/tooManyArguments": 2,
     "require-path-exists/exists": [ 2, {
