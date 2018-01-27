@@ -63,7 +63,7 @@ beforeAll(function(done) {
         this.Utils.getProp(this._persistentStorage, key, defaultValue);
       }
 
-      async onInit() {
+      async onStart() {
         var schemaEngine = this.getSchemaEngine(),
             connectorEngine = this.getConnectorEngine();
 
@@ -87,7 +87,7 @@ beforeAll(function(done) {
         connectorEngine.register(new this.SQLiteConnector());
       }
 
-      async onRouteEngineInit(routeEngine) {
+      async onRouteEngineStart(routeEngine) {
         routeEngine.registerRoute((Route) => {
           return class TestRoute extends Route {
 
@@ -95,10 +95,10 @@ beforeAll(function(done) {
         });
       }
 
-      async onAfterInit() {
+      async onAfterStart() {
         var schemaEngine = this.getSchemaEngine();
 
-        // Initialize SQLite memory connector
+        // Startialize SQLite memory connector
         await this.getConnector('sqlite').migrate(schemaEngine);
       }
 
