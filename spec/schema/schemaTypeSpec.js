@@ -27,7 +27,11 @@ describe('SchemaType', function() {
     });
 
     it('should be able to set all schema properties', function() {
-      const validateFunc = function() {};
+      var validateFuncCalled = false;
+      const validateFunc = function() {
+        validateFuncCalled = true;
+      };
+
       this.type
         .field('test')
         .notNull
@@ -41,11 +45,14 @@ describe('SchemaType', function() {
       expect(this.type.getProp('validators')).toBeTruthy();
       expect(this.type.getProp('validators') instanceof Array).toBeTruthy();
       expect(this.type.getProp('validators').length).toBe(2);
-      expect(this.type.getProp('validators')[1]).toBe(validateFunc);
+      expect(this.type.getProp('validators')[1]).toBeType(Function);
+
+      this.type.getProp('validators')[1]();
+      expect(validateFuncCalled).toBe(true);
     });
 
     it('should be able to use getters and setters', function() {
-      const validateFunc = function(){};
+      const validateFunc = function() {};
       this.type
         .field('test')
         .getter((val) => {

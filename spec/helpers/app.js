@@ -42,7 +42,7 @@ beforeAll(function(done) {
         return {
           test: {
             http: {
-              enabled: false
+              enabled: true
             }
           }
         };
@@ -63,7 +63,7 @@ beforeAll(function(done) {
         this.Utils.getProp(this._persistentStorage, key, defaultValue);
       }
 
-      async onStart() {
+      async onSchemaEngineBeforeStart() {
         var schemaEngine = this.getSchemaEngine(),
             connectorEngine = this.getConnectorEngine();
 
@@ -87,13 +87,14 @@ beforeAll(function(done) {
         connectorEngine.register(new this.SQLiteConnector());
       }
 
-      async onRouteEngineStart(routeEngine) {
-        routeEngine.registerRoute((Route) => {
-          return class TestRoute extends Route {
+      // async onRouteEngineStart() {
+      //   var routeEngine = this.getRouteEngine();
+      //   routeEngine.registerRoute((Route) => {
+      //     return class TestRoute extends Route {
 
-          };
-        });
-      }
+      //     };
+      //   });
+      // }
 
       async onAfterStart() {
         var schemaEngine = this.getSchemaEngine();
@@ -111,7 +112,7 @@ beforeAll(function(done) {
     await app.start();
 
     this.createTestModel = async function() {
-      var model = await app.create('Test', {
+      var model = await app.create({
             id: 'Test:1',
             string: 'test string',
             integer: 756.23,
@@ -119,8 +120,8 @@ beforeAll(function(done) {
             date: moment('2017-12-29', 'YYYY-MM-DD'),
             stringArray: ['hello', 'world'],
             integerArray: [42, 0, 1]
-          }),
-          childModel = await app.create('Test', {
+          }, 'Test'),
+          childModel = await app.create({
             id: 'Test:2',
             string: 'child test string',
             integer: 756.78,
@@ -128,7 +129,7 @@ beforeAll(function(done) {
             date: moment('2017-12-31', 'YYYY-MM-DD'),
             stringArray: ['hello', 'from', 'child'],
             integerArray: [1, 42, 0]
-          }, { owner: model });
+          }, { owner: model, modelType: 'Test' });
 
       model.children = [childModel];
 
