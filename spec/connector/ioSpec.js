@@ -12,7 +12,7 @@ describe('Connector IO', function() {
     // TODO: Add more internal stress testing
   });
 
-  describe('External functionality', function() {
+  fdescribe('External functionality', function() {
     it('should be able to decompose a model', function() {
       // Decomposition should always be in order because the field names of the model are sorted
 
@@ -21,16 +21,16 @@ describe('Connector IO', function() {
       expect(decomposed).toBeArray(13);
 
       // Test Model
-      this.testModel(decomposed[0].value);
+      this.testModel(decomposed[0].getValue());
 
       // Test Child Model
-      this.testChild(decomposed[1].value);
+      this.testChild(decomposed[1].getValue());
 
       // String Model (Test:2)
-      this.testString(decomposed[7].value, 'Test:2', 'stringArray');
+      this.testString(decomposed[7].getValue(), 'Test:2', 'stringArray');
 
       // Integer Model (Test:1)
-      this.testInteger(decomposed[8].value, 'Test:1', 'integerArray');
+      this.testInteger(decomposed[8].getValue(), 'Test:1', 'integerArray');
     });
 
     it('should be able to save a model', function(done) {
@@ -48,6 +48,8 @@ describe('Connector IO', function() {
     it('should be able to load saved model', function(done) {
       (async function run() {
         var model = await this.app.query('Test').id.eq('Test:1').first;
+
+        debugger;
 
         expect(model).toBeType(this.app.getSchemaEngine().getModelBaseClass());
 

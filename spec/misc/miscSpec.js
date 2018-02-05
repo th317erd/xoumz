@@ -54,33 +54,35 @@ describe('Utils', function() {
   describe('LazyCollection', function() {
     beforeEach(function() {
       this.asyncOpIndex = 0;
+      this.verifyIndex = 0;
 
       this.testMappedItem = (item, index) => {
         expect(item.index).toBe(index);
         expect(item.hello).toBe(`world@${index}`);
       };
 
-      var verifyIndex = 0;
       this.verifyCollectionIntegrity = (item, index) => {
-        expect(index).toBe(verifyIndex);
-        expect(item.index).toBe(verifyIndex);
-        verifyIndex++;
+        expect(index).toBe(this.verifyIndex);
+        expect(item.index).toBe(this.verifyIndex);
+        this.verifyIndex++;
       };
 
       this.asyncOp = () => {
         var index = this.asyncOpIndex++,
             t = 10 + (Math.random() * 90);
 
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({ index, time: t });
-          }, t);
-        });
+        return () => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({ index, time: t });
+            }, t);
+          });
+        };
       };
 
       var collection = this.collection = new this.app.LazyCollection();
       for (var i = 0, il = 5; i < il; i++)
-        collection.push(this.asyncOp);
+        collection.push(this.asyncOp());
     });
 
     it('should be able to iterate a LazyCollection', async function(done) {
@@ -112,6 +114,13 @@ describe('Utils', function() {
       expect(rets).toBeType(Array);
       rets.forEach((item, index) => this.testMappedItem(item, index));
 
+      // Make sure none of the values have changed
+      this.verifyIndex = 0;
+      await this.collection.forEach(async (item, i) => {
+        this.verifyCollectionIntegrity(item, i);
+        expect(item.hello).toBe(undefined);
+      });
+
       done();
     });
 
@@ -123,6 +132,40 @@ describe('Utils', function() {
 
       expect(rets).toBeType(Array);
       rets.forEach((item, index) => this.testMappedItem(item, index));
+
+      // Make sure none of the values have changed
+      this.verifyIndex = 0;
+      await this.collection.forEach(async (item, i) => {
+        this.verifyCollectionIntegrity(item, i);
+        expect(item.hello).toBe(undefined);
+      });
+
+      done();
+    });
+
+    it('should be able to access LazyCollection items directly', async function(done) {
+      expect(this.collection.length).toBe(5);
+
+      var item = await this.collection.index(4);
+      expect(item.index).toBe(4);
+
+      var item = await this.collection.index(1);
+      expect(item.index).toBe(1);
+
+      var item = await this.collection.index(0);
+      expect(item.index).toBe(0);
+
+      var item = await this.collection.index(3);
+      expect(item.index).toBe(3);
+
+      var item = await this.collection.index(2);
+      expect(item.index).toBe(2);
+
+      var item = await this.collection.first();
+      expect(item.index).toBe(0);
+
+      var item = await this.collection.last();
+      expect(item.index).toBe(4);
 
       done();
     });
