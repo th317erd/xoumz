@@ -25,6 +25,26 @@ const customMatchers = {
         return { pass: true, message: null };
       }
     };
+  },
+  toBeValidISODate: function(util, customEqualityTesters) {
+    return {
+      compare: function(actual, expected) {
+        return {
+          pass: !!('' + actual).match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/),
+          message: `Expected ${actual} to be a valid ISO date`
+        };
+      }
+    };
+  },
+  toBeValidID: function(util, customEqualityTesters) {
+    return {
+      compare: function(actual, expected) {
+        return {
+          pass: !!('' + actual).match(new RegExp(`^${expected}:[a-f0-9-]+$`)),
+          message: `Expected ${actual} to be a valid ID of model type ${expected}`
+        };
+      }
+    };
   }
 };
 

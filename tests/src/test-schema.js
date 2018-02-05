@@ -1,5 +1,5 @@
 const { Application } = require('../../lib'),
-      { inspect } = require('./utils'),
+      { inspect } = require('./base/utils'),
       User = require('./models/user'),
       Dependent = require('./models/dependent'),
       testPlugin = require('./test-plugin');

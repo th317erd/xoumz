@@ -1,4 +1,4 @@
-const { inspect } = require('../utils');
+const { inspect } = require('../base/utils');
 
 module.exports = function(self, types) {
   var app = this.getApplication();
