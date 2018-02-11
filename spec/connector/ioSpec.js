@@ -27,10 +27,10 @@ describe('Connector IO', function() {
       this.testChild(decomposed[1].getValue());
 
       // String Model (Test:2)
-      this.testString(decomposed[7].getValue(), 'Test:2', 'stringArray');
+      this.testString(decomposed[7].getValue(), 'child', 'Test:2', 'stringArray');
 
       // Integer Model (Test:1)
-      this.testInteger(decomposed[8].getValue(), 'Test:1', 'integerArray');
+      this.testInteger(decomposed[8].getValue(), 42, 'Test:1', 'integerArray');
     });
 
     it('should be able to save a model', function(done) {

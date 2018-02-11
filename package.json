@@ -36,7 +36,7 @@
     "eslint-plugin-extra-syntax": "^1.0.0",
     "eslint-plugin-jasmine": "^2.9.1",
     "eslint-plugin-require-path-exists": "git+https://github.com/th317erd/eslint-plugin-require-path-exists.git#dist",
-    "jasmine": "^2.8.0",
+    "jasmine": "^3.0.0",
     "request": "^2.83.0"
   }
 }

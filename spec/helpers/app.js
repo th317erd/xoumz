@@ -3,6 +3,19 @@ const { Application } = require('../../lib'),
       moment = require('moment');
 
 const customMatchers = {
+  toBeTheSame: function(util, customEqualityTesters) {
+    return {
+      compare: function(_actual, _expected) {
+        var actual = (_actual !== undefined && _actual !== null) ? _actual.valueOf() : _actual,
+            expected = (_expected !== undefined && _expected !== null) ? _expected.valueOf() : _expected;
+
+        return {
+          pass: util.equals(actual, expected, customEqualityTesters),
+          message: `Expected ${actual} to be the same as ${expected}`
+        };
+      }
+    };
+  },
   toBeArray: function(util, customEqualityTesters) {
     return {
       compare: function(actual, expected) {
@@ -43,6 +56,45 @@ const customMatchers = {
           pass: !!('' + actual).match(new RegExp(`^${expected}:[a-f0-9-]+$`)),
           message: `Expected ${actual} to be a valid ID of model type ${expected}`
         };
+      }
+    };
+  },
+  toBePrimitiveModel: function(util, customEqualityTesters) {
+    return {
+      compare: function(actual, expected) {
+        var rawValue = expected.value,
+            ownerID = expected.ownerID || 'Test:1',
+            ownerField = expected.ownerField || 'children',
+            ownerType = expected.ownerType || 'Test';
+
+        if (!actual)
+          return { pass: false, message: `Expected ${actual} to be a string model` };
+
+        if (!actual.id.match(/^String:[abcdef0-9-]+/))
+          return { pass: false, message: `Expected ${actual}.id to be a valid id` };
+
+        if (actual.value !== rawValue)
+          return { pass: false, message: `Expected ${actual}.value to be ${rawValue}` };
+
+        if (!actual.createdAt)
+          return { pass: false, message: `Expected ${actual}.createdAt to be truthy` };
+
+        if (!actual.updatedAt)
+          return { pass: false, message: `Expected ${actual}.updatedAt to be truthy` };
+
+        if (actual.ownerID !== ownerID)
+          return { pass: false, message: `Expected ${actual}.ownerID to be ${ownerID}` };
+
+        if (actual.ownerID !== ownerID)
+          return { pass: false, message: `Expected ${actual}.ownerID to be ${ownerID}` };
+
+        if (actual.ownerType !== ownerType)
+          return { pass: false, message: `Expected ${actual}.ownerType to be ${ownerType}` };
+
+        if (actual.ownerField !== ownerField)
+          return { pass: false, message: `Expected ${actual}.ownerField to be ${ownerField}` };
+
+        return { pass: true };
       }
     };
   }
@@ -128,84 +180,82 @@ beforeAll(function(done) {
       }
     }
 
-    var app = this.app = new TestApplication();
-    await app.start();
-
-    this.createTestModel = async function() {
-      var model = await app.create({
-            id: 'Test:1',
-            string: 'test string',
-            integer: 756.23,
-            boolean: true,
-            date: moment('2017-12-29', 'YYYY-MM-DD'),
-            stringArray: ['hello', 'world'],
-            integerArray: [42, 0, 1]
-          }, 'Test'),
-          childModel = await app.create({
-            id: 'Test:2',
-            string: 'child test string',
-            integer: 756.78,
-            boolean: false,
-            date: moment('2017-12-31', 'YYYY-MM-DD'),
-            stringArray: ['hello', 'from', 'child'],
-            integerArray: [1, 42, 0]
-          }, { owner: model, modelType: 'Test' });
-
-      model.children = [childModel];
-
-      return model;
-    };
+    application = this.app = new TestApplication();
+    await application.start();
 
     done();
   }
 
+  async function modelTester(testData, ownerData, value, datesAsMoment) {
+    expect(value.id).toBeTheSame(testData.id);
+    expect(value.boolean).toBeTheSame(testData.boolean);
+    expect((datesAsMoment) ? value.date.toISOString() : value.date).toBeTheSame(testData.date.toISOString());
+    expect(value.integer).toBeTheSame(Math.round(testData.integer));
+    expect(value.string).toBeTheSame(testData.string);
+
+    this.testLazyCollection(value.stringArray, testData.stringArray);
+    this.testLazyCollection(value.integerArray, testData.integerArray);
+
+    expect(value.createdAt).toBeTruthy();
+    expect(value.updatedAt).toBeTruthy();
+
+    if (!ownerData) {
+      expect(value.ownerID).toBeFalsy();
+      expect(value.ownerType).toBeFalsy();
+      expect(value.ownerField).toBeFalsy();
+
+      this.testLazyCollection(value.children, testData.children, (item, index, staticArray) => {
+        this[`testChildModel${index}`](item, true);
+      });
+    } else {
+      expect(value.ownerID).toBeTheSame(ownerData.id);
+      expect(value.ownerType).toBeTheSame('Test');
+      expect(value.ownerField).toBeTheSame('children');
+    }
+  }
+
   jasmine.addMatchers(customMatchers);
 
-  this.testModel = function(value, datesAsMoment) {
-    expect(value.id).toBe('Test:1');
-    expect(value.boolean).toBe(true);
-    expect((datesAsMoment) ? value.date.toISOString() : value.date).toBe('2017-12-29T07:00:00.000Z');
-    expect(value.integer).toBe(756);
-    expect(value.string).toBe('test string');
-    expect(value.createdAt).toBeTruthy();
-    expect(value.updatedAt).toBeTruthy();
-    expect(value.ownerID).toBeFalsy();
-    expect(value.ownerType).toBeFalsy();
-    expect(value.ownerField).toBeFalsy();
+  var application;
+  const testChildModelData = {
+          id: 'Test:2',
+          string: 'child test string',
+          integer: 876.78,
+          boolean: false,
+          date: moment('2017-12-31', 'YYYY-MM-DD'),
+          stringArray: ['hello', 'from', 'child'],
+          integerArray: [1, 42, 0]
+        },
+        testModelData = {
+          id: 'Test:1',
+          string: 'test string',
+          integer: 756.23,
+          boolean: true,
+          date: moment('2017-12-29', 'YYYY-MM-DD'),
+          stringArray: ['hello', 'world'],
+          integerArray: [42, 0, 1],
+          children: [testChildModelData]
+        };
+
+  this.testLazyCollection = async (collection, staticArray, _compareFunc) => {
+    var compareFunc = _compareFunc || ((item, index) => expect(item).toBeTheSame(staticArray[index]));
+
+    var testArray = await collection.map((item, index) => {
+      compareFunc(item, index, staticArray);
+      return item;
+    });
+
+    for (var i = 0, il = testArray.length; i < il; i++)
+      compareFunc(testArray[i], i, staticArray);
   };
 
-  this.testChild = function(value, datesAsMoment) {
-    expect(value.id).toBe('Test:2');
-    expect(value.boolean).toBe(false);
-    expect((datesAsMoment) ? value.date.toISOString() : value.date).toBe('2017-12-31T07:00:00.000Z');
-    expect(value.integer).toBe(757);
-    expect(value.string).toBe('child test string');
-    expect(value.createdAt).toBeTruthy();
-    expect(value.updatedAt).toBeTruthy();
-    expect(value.ownerID).toBe('Test:1');
-    expect(value.ownerType).toBe('Test');
-    expect(value.ownerField).toBe('children');
+  this.createTestModel = async () => {
+    var model = await application.create(testModelData, 'Test');
+    return model;
   };
 
-  this.testString = function(value, ownerID, ownerField) {
-    expect(value.id).toMatch(/^String:[abcdef0-9-]+/);
-    expect(value.value).toBe('child');
-    expect(value.createdAt).toBeTruthy();
-    expect(value.updatedAt).toBeTruthy();
-    expect(value.ownerID).toBe(ownerID);
-    expect(value.ownerType).toBe('Test');
-    expect(value.ownerField).toBe(ownerField);
-  };
-
-  this.testInteger = function(value, ownerID, ownerField) {
-    expect(value.id).toMatch(/^Integer:[abcdef0-9-]+/);
-    expect(value.value).toBe(42);
-    expect(value.createdAt).toBeTruthy();
-    expect(value.updatedAt).toBeTruthy();
-    expect(value.ownerID).toBe(ownerID);
-    expect(value.ownerType).toBe('Test');
-    expect(value.ownerField).toBe(ownerField);
-  };
+  this.testModel = modelTester.bind(this, testModelData, null);
+  this.testChildModel0 = modelTester.bind(this, testChildModelData, testModelData);
 
   this.inspect = function(obj) {
     console.log(util.inspect(obj, { depth: null, colors: true }));
