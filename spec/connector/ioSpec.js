@@ -13,24 +13,38 @@ describe('Connector IO', function() {
   });
 
   fdescribe('External functionality', function() {
-    it('should be able to decompose a model', function() {
+    fit('should be able to decompose a model', async function(done) {
       // Decomposition should always be in order because the field names of the model are sorted
 
-      var decomposed = this.model.decompose();
+      var decomposed = await this.model.decompose();
 
       expect(decomposed).toBeArray(13);
 
       // Test Model
-      this.testModel(decomposed[0].getValue());
+      this.testDecomposedModel(decomposed[0].getValue());
 
       // Test Child Model
-      this.testChild(decomposed[1].getValue());
+      this.testChildDecomposedModel(decomposed[1].getValue());
 
       // String Model (Test:2)
-      this.testString(decomposed[7].getValue(), 'child', 'Test:2', 'stringArray');
+      expect(decomposed[7].getValue()).toBePrimitiveModel({
+        type: 'String',
+        value: 'child',
+        ownerID: 'Test:2',
+        ownerField: 'stringArray',
+        ownerType: 'Test'
+      });
 
       // Integer Model (Test:1)
-      this.testInteger(decomposed[8].getValue(), 42, 'Test:1', 'integerArray');
+      expect(decomposed[8].getValue()).toBePrimitiveModel({
+        type: 'Integer',
+        value: 42,
+        ownerID: 'Test:1',
+        ownerField: 'integerArray',
+        ownerType: 'Test'
+      });
+
+      done();
     });
 
     it('should be able to save a model', function(done) {

@@ -63,14 +63,15 @@ const customMatchers = {
     return {
       compare: function(actual, expected) {
         var rawValue = expected.value,
-            ownerID = expected.ownerID || 'Test:1',
-            ownerField = expected.ownerField || 'children',
+            type = expected.type,
+            ownerID = expected.ownerID,
+            ownerField = expected.ownerField,
             ownerType = expected.ownerType || 'Test';
 
         if (!actual)
           return { pass: false, message: `Expected ${actual} to be a string model` };
 
-        if (!actual.id.match(/^String:[abcdef0-9-]+/))
+        if (!actual.id.match(new RegExp(`^${type}:[abcdef0-9-]+`)))
           return { pass: false, message: `Expected ${actual}.id to be a valid id` };
 
         if (actual.value !== rawValue)
@@ -195,8 +196,8 @@ beforeAll(function(done) {
     expect(value.integer).toBeTheSame(Math.round(testData.integer));
     expect(value.string).toBeTheSame(testData.string);
 
-    this.testLazyCollection(value.stringArray, testData.stringArray);
-    this.testLazyCollection(value.integerArray, testData.integerArray);
+    await this.testLazyCollection(value.stringArray, testData.stringArray);
+    await this.testLazyCollection(value.integerArray, testData.integerArray);
 
     expect(value.createdAt).toBeTruthy();
     expect(value.updatedAt).toBeTruthy();
@@ -206,9 +207,29 @@ beforeAll(function(done) {
       expect(value.ownerType).toBeFalsy();
       expect(value.ownerField).toBeFalsy();
 
-      this.testLazyCollection(value.children, testData.children, (item, index, staticArray) => {
+      await this.testLazyCollection(value.children, testData.children, (item, index, staticArray) => {
         this[`testChildModel${index}`](item, true);
       });
+    } else {
+      expect(value.ownerID).toBeTheSame(ownerData.id);
+      expect(value.ownerType).toBeTheSame('Test');
+      expect(value.ownerField).toBeTheSame('children');
+    }
+  }
+
+  function decomposedModelTester(testData, ownerData, value) {
+    expect(value.id).toBeTheSame(testData.id);
+    expect(value.boolean).toBeTheSame(testData.boolean);
+    expect(value.date).toBeTheSame(testData.date.toISOString());
+    expect(value.integer).toBeTheSame(Math.round(testData.integer));
+    expect(value.string).toBeTheSame(testData.string);
+    expect(value.createdAt).toBeTruthy();
+    expect(value.updatedAt).toBeTruthy();
+
+    if (!ownerData) {
+      expect(value.ownerID).toBeFalsy();
+      expect(value.ownerType).toBeFalsy();
+      expect(value.ownerField).toBeFalsy();
     } else {
       expect(value.ownerID).toBeTheSame(ownerData.id);
       expect(value.ownerType).toBeTheSame('Test');
@@ -258,6 +279,9 @@ beforeAll(function(done) {
 
   this.testModel = modelTester.bind(this, testModelData, null);
   this.testChildModel0 = modelTester.bind(this, testChildModelData, testModelData);
+
+  this.testDecomposedModel = decomposedModelTester.bind(this, testModelData, null);
+  this.testChildDecomposedModel = decomposedModelTester.bind(this, testChildModelData, testModelData);
 
   this.inspect = function(obj) {
     console.log(util.inspect(obj, { depth: null, colors: true }));

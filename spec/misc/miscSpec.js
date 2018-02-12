@@ -88,7 +88,7 @@ describe('Utils', function() {
     it('should be able to iterate a LazyCollection', async function(done) {
       var ret = await this.collection.forEach(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
-      }, false);
+      }, { sequential: true });
 
       expect(ret).toBeTheSame(undefined);
 
@@ -98,7 +98,7 @@ describe('Utils', function() {
     it('should be able to iterate a LazyCollection (parallel)', async function(done) {
       var ret = await this.collection.forEach(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
-      }, true);
+      }, { sequential: false });
 
       expect(ret).toBeTheSame(undefined);
 
@@ -109,7 +109,7 @@ describe('Utils', function() {
       var rets = await this.collection.map(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
         return { index: item.index, time: item.time, hello: `world@${item.index}` };
-      }, false);
+      }, { sequential: true });
 
       expect(rets).toBeType(Array);
       rets.forEach((item, index) => this.testMappedItem(item, index));
@@ -119,7 +119,7 @@ describe('Utils', function() {
       await this.collection.forEach(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
         expect(item.hello).toBeTheSame(undefined);
-      });
+      }, { sequential: true });
 
       done();
     });
@@ -128,7 +128,7 @@ describe('Utils', function() {
       var rets = await this.collection.map(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
         return { index: item.index, time: item.time, hello: `world@${item.index}` };
-      });
+      }, { sequential: false });
 
       expect(rets).toBeType(Array);
       rets.forEach((item, index) => this.testMappedItem(item, index));
@@ -138,7 +138,7 @@ describe('Utils', function() {
       await this.collection.forEach(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
         expect(item.hello).toBeTheSame(undefined);
-      });
+      }, { sequential: false });
 
       done();
     });
