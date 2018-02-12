@@ -183,6 +183,8 @@ beforeAll(function(done) {
     application = this.app = new TestApplication();
     await application.start();
 
+    debugger;
+
     done();
   }
 

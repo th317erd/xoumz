@@ -39,7 +39,7 @@ describe('Connector IO', function() {
 
         expect(ret).toBeArray(1);
         expect(ret[0].errors).toBeArray(0);
-        expect(ret[0].success).toBe(true);
+        expect(ret[0].success).toBeTheSame(true);
 
         done();
       }).call(this);
@@ -54,32 +54,32 @@ describe('Connector IO', function() {
         expect(model).toBeType(this.app.getSchemaEngine().getModelBaseClass());
 
         // Make sure reconstructed model and original model are different
-        expect(this.model).not.toBe(model);
+        expect(this.model).not.toBeTheSame(model);
 
         // Test reconstructed model
         this.testModel(model, true);
         expect(model.children).toBeArray(1);
         expect(model.stringArray).toBeArray(2);
-        expect(model.stringArray[0]).toBe('hello');
-        expect(model.stringArray[1]).toBe('world');
+        expect(model.stringArray[0]).toBeTheSame('hello');
+        expect(model.stringArray[1]).toBeTheSame('world');
         expect(model.integerArray).toBeArray(3);
-        expect(model.integerArray[0]).toBe(42);
-        expect(model.integerArray[1]).toBe(0);
-        expect(model.integerArray[2]).toBe(1);
+        expect(model.integerArray[0]).toBeTheSame(42);
+        expect(model.integerArray[1]).toBeTheSame(0);
+        expect(model.integerArray[2]).toBeTheSame(1);
 
         // Test reconstructed child
         var child = model.children[0];
-        expect(this.model.children[0]).not.toBe(child);
+        expect(this.model.children[0]).not.toBeTheSame(child);
         this.testChild(child, true);
         expect(child.children).toBeArray(0);
         expect(child.stringArray).toBeArray(3);
-        expect(child.stringArray[0]).toBe('hello');
-        expect(child.stringArray[1]).toBe('from');
-        expect(child.stringArray[2]).toBe('child');
+        expect(child.stringArray[0]).toBeTheSame('hello');
+        expect(child.stringArray[1]).toBeTheSame('from');
+        expect(child.stringArray[2]).toBeTheSame('child');
         expect(child.integerArray).toBeArray(3);
-        expect(child.integerArray[0]).toBe(1);
-        expect(child.integerArray[1]).toBe(42);
-        expect(child.integerArray[2]).toBe(0);
+        expect(child.integerArray[0]).toBeTheSame(1);
+        expect(child.integerArray[1]).toBeTheSame(42);
+        expect(child.integerArray[2]).toBeTheSame(0);
 
         done();
       }).call(this);

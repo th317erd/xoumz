@@ -13,12 +13,12 @@ describe('Permissions', function() {
   describe('External functionality', function() {
     it('should be able to get perspective permissions on child', function() {
       var level = this.model.getPermissionLevel(this.model.children[0]);
-      expect(level).toBe(this.app.Role.PERMISSION.READ);
+      expect(level).toBeTheSame(this.app.Role.PERMISSION.READ);
     });
 
     it('should be able to get perspective permissions on self', function() {
       var level = this.model.getPermissionLevel(this.model);
-      expect(level).toBe(this.app.Role.PERMISSION.FULL);
+      expect(level).toBeTheSame(this.app.Role.PERMISSION.FULL);
     });
 
     it('should be blocked without admin role', function(done) {
@@ -28,7 +28,7 @@ describe('Permissions', function() {
         otherModel.id = 'User:500';
 
         var level = this.model.getPermissionLevel(otherModel);
-        expect(level).toBe(0);
+        expect(level).toBeTheSame(0);
 
         done();
       })();
@@ -42,7 +42,7 @@ describe('Permissions', function() {
         this.model.roles = ['admin'];
 
         var level = this.model.getPermissionLevel(otherModel);
-        expect(level).toBe(this.app.Role.PERMISSION.FULL);
+        expect(level).toBeTheSame(this.app.Role.PERMISSION.FULL);
 
         done();
       })();

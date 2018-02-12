@@ -24,36 +24,36 @@ describe('Routes', function() {
         }
       }, async (err, response, body) => {
         expect([null, undefined]).toContain(err);
-        expect(response.statusCode).toBe(201);
+        expect(response.statusCode).toBeTheSame(201);
         expect(body.body).toBeTruthy();
 
         // See if create response is what we expect
         var body = body.body;
         expect(body.id).toBeValidID('Test');
-        expect(body.string).toBe('test:string');
+        expect(body.string).toBeTheSame('test:string');
         expect(body.createdAt).toBeValidISODate();
         expect(body.updatedAt).toBeValidISODate();
         expect(body.date).toBeValidISODate();
-        expect(body.integer).toBe(65756755);
-        expect(body.boolean).toBe(true);
+        expect(body.integer).toBeTheSame(65756755);
+        expect(body.boolean).toBeTheSame(true);
 
-        expect(body.stringArray[0]).toBe('hello');
-        expect(body.stringArray[1]).toBe('world');
-        expect(body.stringArray[2]).toBe('this');
-        expect(body.stringArray[3]).toBe('is');
-        expect(body.stringArray[4]).toBe('a');
-        expect(body.stringArray[5]).toBe('test');
+        expect(body.stringArray[0]).toBeTheSame('hello');
+        expect(body.stringArray[1]).toBeTheSame('world');
+        expect(body.stringArray[2]).toBeTheSame('this');
+        expect(body.stringArray[3]).toBeTheSame('is');
+        expect(body.stringArray[4]).toBeTheSame('a');
+        expect(body.stringArray[5]).toBeTheSame('test');
 
-        expect(body.integerArray[0]).toBe(1);
-        expect(body.integerArray[1]).toBe(2);
-        expect(body.integerArray[2]).toBe(3);
-        expect(body.integerArray[3]).toBe(4);
-        expect(body.integerArray[4]).toBe(5);
+        expect(body.integerArray[0]).toBeTheSame(1);
+        expect(body.integerArray[1]).toBeTheSame(2);
+        expect(body.integerArray[2]).toBeTheSame(3);
+        expect(body.integerArray[3]).toBeTheSame(4);
+        expect(body.integerArray[4]).toBeTheSame(5);
 
         // Now attempt to load model that was just created
         var model = await this.app.where('Test').field('id').equals(body.id).first;
         expect(model).toBeTruthy();
-        expect(model.id).toBe(body.id);
+        expect(model.id).toBeTheSame(body.id);
         model = null;
 
         done();

@@ -20,10 +20,10 @@ function createLargeString(size) {
 describe('Utils', function() {
   describe('Utils', function() {
     it('should be able to work with mime types', function() {
-      expect(this.app.Utils.getMimeType('test.json')).toBe('application/json');
-      expect(this.app.Utils.getMimeType('test.html')).toBe('text/html');
-      expect(this.app.Utils.getExtensionFromMimeType('application/json')).toBe('json');
-      expect(this.app.Utils.getExtensionFromMimeType('text/html')).toBe('html');
+      expect(this.app.Utils.getMimeType('test.json')).toBeTheSame('application/json');
+      expect(this.app.Utils.getMimeType('test.html')).toBeTheSame('text/html');
+      expect(this.app.Utils.getExtensionFromMimeType('application/json')).toBeTheSame('json');
+      expect(this.app.Utils.getExtensionFromMimeType('text/html')).toBeTheSame('html');
     });
   });
 
@@ -34,7 +34,7 @@ describe('Utils', function() {
 
       stream.on('end', () => {
         var newStr = fs.readFileSync('/tmp/_temp.buf', { encoding: 'utf8' });
-        expect(newStr).toBe(str);
+        expect(newStr).toBeTheSame(str);
         done();
       }).pipe(fs.createWriteStream('/tmp/_temp.buf'));
     });
@@ -45,7 +45,7 @@ describe('Utils', function() {
 
       stream.on('end', () => {
         var newStr = fs.readFileSync('/tmp/_temp.buf', { encoding: 'utf8' });
-        expect(newStr).toBe(str);
+        expect(newStr).toBeTheSame(str);
         done();
       }).pipe(fs.createWriteStream('/tmp/_temp.buf'));
     });
@@ -57,13 +57,13 @@ describe('Utils', function() {
       this.verifyIndex = 0;
 
       this.testMappedItem = (item, index) => {
-        expect(item.index).toBe(index);
-        expect(item.hello).toBe(`world@${index}`);
+        expect(item.index).toBeTheSame(index);
+        expect(item.hello).toBeTheSame(`world@${index}`);
       };
 
       this.verifyCollectionIntegrity = (item, index) => {
-        expect(index).toBe(this.verifyIndex);
-        expect(item.index).toBe(this.verifyIndex);
+        expect(index).toBeTheSame(this.verifyIndex);
+        expect(item.index).toBeTheSame(this.verifyIndex);
         this.verifyIndex++;
       };
 
@@ -90,7 +90,7 @@ describe('Utils', function() {
         this.verifyCollectionIntegrity(item, i);
       }, false);
 
-      expect(ret).toBe(undefined);
+      expect(ret).toBeTheSame(undefined);
 
       done();
     });
@@ -100,7 +100,7 @@ describe('Utils', function() {
         this.verifyCollectionIntegrity(item, i);
       }, true);
 
-      expect(ret).toBe(undefined);
+      expect(ret).toBeTheSame(undefined);
 
       done();
     });
@@ -118,7 +118,7 @@ describe('Utils', function() {
       this.verifyIndex = 0;
       await this.collection.forEach(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
-        expect(item.hello).toBe(undefined);
+        expect(item.hello).toBeTheSame(undefined);
       });
 
       done();
@@ -137,35 +137,35 @@ describe('Utils', function() {
       this.verifyIndex = 0;
       await this.collection.forEach(async (item, i) => {
         this.verifyCollectionIntegrity(item, i);
-        expect(item.hello).toBe(undefined);
+        expect(item.hello).toBeTheSame(undefined);
       });
 
       done();
     });
 
     it('should be able to access LazyCollection items directly', async function(done) {
-      expect(this.collection.length).toBe(5);
+      expect(this.collection.length).toBeTheSame(5);
 
       var item = await this.collection.index(4);
-      expect(item.index).toBe(4);
+      expect(item.index).toBeTheSame(4);
 
       var item = await this.collection.index(1);
-      expect(item.index).toBe(1);
+      expect(item.index).toBeTheSame(1);
 
       var item = await this.collection.index(0);
-      expect(item.index).toBe(0);
+      expect(item.index).toBeTheSame(0);
 
       var item = await this.collection.index(3);
-      expect(item.index).toBe(3);
+      expect(item.index).toBeTheSame(3);
 
       var item = await this.collection.index(2);
-      expect(item.index).toBe(2);
+      expect(item.index).toBeTheSame(2);
 
       var item = await this.collection.first();
-      expect(item.index).toBe(0);
+      expect(item.index).toBeTheSame(0);
 
       var item = await this.collection.last();
-      expect(item.index).toBe(4);
+      expect(item.index).toBeTheSame(4);
 
       done();
     });
