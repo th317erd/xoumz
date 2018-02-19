@@ -17,6 +17,7 @@ describe('Connector IO', function() {
       // Decomposition should always be in order because the field names of the model are sorted
 
       var decomposed = await this.model.decompose();
+      debugger;
 
       expect(decomposed).toBeArray(13);
 
