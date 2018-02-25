@@ -1,96 +1,67 @@
 describe('SchemaType', function() {
   beforeEach(function() {
-    this.SchemaType = this.app.getSchemaEngine().getSchemaTypeClass();
-    this.types = this.app.getSchemaEngine().getSchemaTypes();
-    this.type = this.types.String;
+    this.defaultSchemaTypes = this.app.requireModule('./schema/primitive-model-types');
+    this.field = this.defaultSchemaTypes.String.getType().field('test_field').value('derp').required.maxLength(10).nullable(false);
   });
 
-  describe('Internal functionality', function() {
-    it('context should properly switch', function() {
-      expect(this.type._context).toBeTheSame('*');
-      this.type.context('test', (context) => {
-        expect(context._context).toBeTheSame('test');
-      });
-      expect(this.type._context).toBeTheSame('*');
-    });
+  it('should be able to define a field', function() {
+    var field = this.field.finalize();
+
+    expect(field.getProp('field')).toBe('test_field');
+    expect(field.getProp('value')).toBe('derp');
+    expect(field.getProp('maxLength')).toBe(10);
+    expect(field.getProp('nullable')).toBe(false);
   });
 
-  describe('External functionality', function() {
-    it('should be able to handle bad method arguments', function() {
-      expect(this.type.context.bind(this.type, null)).toThrow();
-      expect(this.type.context.bind(this.type, undefined)).toThrow();
-      expect(this.type.context.bind(this.type, '')).toThrow();
-      expect(this.type.context.bind(this.type, 'test')).toThrow();
-      expect(this.type.context.bind(this.type, 'test', 'string')).toThrow();
-      expect(this.type.context.bind(this.type, 'test', 0)).toThrow();
-      expect(this.type.context.bind(this.type, 'test', true)).toThrow();
-    });
+  it('should be able to specify contexts', function() {
+    this.field.context('test').field('test_field2').maxLength(20).nullable(true);
+    var field = this.field.finalize();
 
-    it('should be able to set all schema properties', function() {
-      var validateFuncCalled = false;
-      const validateFunc = function() {
-        validateFuncCalled = true;
-      };
+    // Test default context
+    expect(field.getProp('field')).toBe('test_field');
+    expect(field.getProp('value')).toBe('derp');
+    expect(field.getProp('maxLength')).toBe(10);
+    expect(field.getProp('nullable')).toBe(false);
 
-      this.type
-        .field('test')
-        .notNull
-        .primaryKey
-        .required
-        .validator(validateFunc);
+    // Test "test" context
+    expect(field.getProp('field', 'test')).toBe('test_field2');
 
-      expect(this.type.getProp('field')).toBeTheSame('test');
-      expect(this.type.getProp('notNull')).toBeTheSame(true);
-      expect(this.type.getProp('primaryKey')).toBeTheSame(true);
-      expect(this.type.getProp('validators')).toBeTruthy();
-      expect(this.type.getProp('validators') instanceof Array).toBeTruthy();
-      expect(this.type.getProp('validators').length).toBeTheSame(2);
-      expect(this.type.getProp('validators')[1]).toBeType(Function);
+    // This should fallback to the default context
+    expect(field.getProp('value', 'test')).toBe('derp');
+    expect(field.getProp('maxLength', 'test')).toBe(20);
+    expect(field.getProp('nullable', 'test')).toBe(true);
+  });
 
-      this.type.getProp('validators')[1]();
-      expect(validateFuncCalled).toBeTheSame(true);
-    });
+  it('should be able to specify validators', function() {
+    this.field.validate((val, opts) => {});
+    var field = this.field.finalize();
 
-    it('should be able to use getters and setters', function() {
-      const validateFunc = function() {};
-      this.type
-        .field('test')
-        .getter((val) => {
-          return ('' + val).toUpperCase();
-        })
-        .setter((val) => {
-          return ('' + val).replace(/\W+/g, '');
-        });
+    // Test default context
+    expect(field.getProp('field')).toBe('test_field');
+    expect(field.getProp('value')).toBe('derp');
+    expect(field.getProp('maxLength')).toBe(10);
+    expect(field.getProp('nullable')).toBe(false);
+    expect(field.getProp('validators')['validate'][0]).toBeType(Function);
+    expect(field.getProp('validators')['validate'][1]).toBeType(Function);
+  });
 
-      var getter = this.type.getProp('getter'),
-          setter = this.type.getProp('setter');
+  it('should be able to create a model', function() {
+    var field = this.field.finalize(),
+        model = field.instantiate(''),
+        errors = model.validate();
 
-      expect(this.type.getProp('field')).toBeTheSame('test');
-      expect(getter instanceof Function).toBeTheSame(true);
-      expect(setter instanceof Function).toBeTheSame(true);
-      expect(getter('test')).toBeTheSame('TEST');
-      expect(setter('-*Hello, World!!!')).toBeTheSame('HelloWorld');
-    });
+    expect(errors).toBeArray(1);
+    expect(errors[0]).toBe('Value required for test_field');
+    expect(model.valueOf()).toBe('');
 
-    it('should be able to set all schema properties with contexts', function() {
-      this.type
-        .field('test')
-        .context('test1', (context) => {
-          context.field('test1');
-        })
-        .context('test2', (context) => {
-          context.field('test2');
-        });
+    var model2 = field.instantiate('Test'),
+        errors2 = model2.validate();
 
-      expect(this.type.getProp('field')).toBeTheSame('test');
-      expect(this.type.getProp('field', 'test1')).toBeTheSame('test1');
-      expect(this.type.getProp('field', 'test2')).toBeTheSame('test2');
-    });
+    expect(errors2).toBe(undefined);
+    expect(model2.valueOf()).toBe('Test');
 
-    it('should lock', function() {
-      this.type.field('test').lock();
-
-      expect(this.type.field.bind(this.type, 'test2')).toThrow();
-    });
+    var field2 = this.defaultSchemaTypes.String.getType().finalize();
+    expect(model instanceof model2.getBaseModelClass()).toBe(true);
+    expect(model instanceof field2.getBaseModelClass()).toBe(true);
   });
 });

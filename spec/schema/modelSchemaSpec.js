@@ -1,12 +1,18 @@
-describe('Default Schema Types', function() {
+describe('ModelSchema', function() {
   beforeEach(function() {
     const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
     const { ModelSchema } = this.app.requireModule('./schema/model-schema');
+    const { Session } = this.app.requireModule('./models/session');
+    const { User } = this.app.requireModule('./models/user');
 
     this.SchemaEngine = SchemaEngine;
     this.ModelSchema = ModelSchema;
 
-    this.schemaEngine = new SchemaEngine();
+    this.schemaEngine = new SchemaEngine({
+      Session,
+      User
+    });
+
     this.userSchema = this.app.requireModule('./models/schemas/user');
   });
 
