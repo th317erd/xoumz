@@ -6,24 +6,48 @@ and short-commings of many production API layers.
 
 Currently looking for talented help!
 
-## Milestones:
+## Milestones
 
 > 1. Robust definable version-aware schema engine with the ability to transform model data real-time.
->   Status: Almost complete
+>
+>    Status: Almost complete
+>
 > 2. Automatic endpoint versioning
->   Status: WIP. Architeching mostly complete, ripping up old code to lay down the foundation
+>
+>    Status: WIP. Architeching mostly complete, ripping up old code to lay down the foundation
+>
 > 3. At run-time database migrations
->   Status: WIP. Architeching mostly complete. Hinges on schema and automatic endpoint versioning.
+>
+>    Status: WIP. Architeching mostly complete. Hinges on schema and automatic endpoint versioning.
+>
 > 4. HTTP layer
->   Status: Working. Serving content, accepting form and file data.
+>
+>    Status: Working. Serving content, accepting form and file data.
+>
 > 5. Robust plugin system
->   Status: Working. Mostly complete
+>
+>    Status: Working. Mostly complete
+>
 > 6. Plugins.
->   MySQL: Working. Needs to be revamped due to planned schema and version changes
->   SQLite: Working. Needs to be revamped due to planned schema and version changes
->   SOLR: Planned
->   ElasticSearch: Planned
->   MongoDB: Planned
->   Logger: Working
+>
+>    MySQL: Working. Needs to be revamped due to planned schema and version changes
+>
+>    SQLite: Working. Needs to be revamped due to planned schema and version changes
+>
+>    SOLR: Planned
+>
+>    ElasticSearch: Planned
+>
+>    MongoDB: Planned
+>
+>    Logger: Working
+>
+>    Email connector: Planned
+>
+>    WebSockets: Planned
+>
+>    Clustering: Planned
+>
 > 7. Developer tools
->   Status: WIP
+>
+>    Status: WIP
