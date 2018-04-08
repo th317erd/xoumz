@@ -181,10 +181,10 @@ beforeAll(function(done) {
       }
     }
 
+    jasmine.clock().mockDate(new Date('2018-01-01'));
+
     application = this.app = new TestApplication();
     await application.start();
-
-    debugger;
 
     done();
   }
