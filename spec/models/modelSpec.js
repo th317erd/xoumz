@@ -17,7 +17,8 @@ describe('SchemaType', function() {
       firstName: 'derp',
       lastName: 'dude',
       userName: 'test',
-      dob: '1986-10-16T00:00:00.000Z'
+      dob: '1986-10-16T00:00:00.000Z',
+      roles: ['derp', 'test', 'stuff', 'hello']
     });
   });
 
@@ -27,6 +28,7 @@ describe('SchemaType', function() {
   describe('External functionality', function() {
     it('should be able to create a valid model', function() {
       var user = this.user;
+      debugger;
       expect(user.firstName.valueOf()).toBe('derp');
       expect(user.lastName.valueOf()).toBe('dude');
       expect(user.userName.valueOf()).toBe('test');
