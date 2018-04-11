@@ -2,6 +2,8 @@ describe('LazyCollection', function() {
   beforeEach(function() {
     const { LazyCollection } = this.app.requireModule('./base/collections');
 
+    this.LazyCollection = LazyCollection;
+
     this.asyncOpIndex = 0;
     this.verifyIndex = 0;
 
@@ -35,9 +37,9 @@ describe('LazyCollection', function() {
   });
 
   it('should be able to iterate a LazyCollection', async function(done) {
-    var ret = await this.collection.forEach(async (item, i) => {
+    var ret = await this.collection.forEach((item, i) => {
       this.verifyCollectionIntegrity(item, i);
-    }, { sequential: true });
+    });
 
     expect(ret).toBeTheSame(undefined);
 
@@ -45,7 +47,7 @@ describe('LazyCollection', function() {
   });
 
   it('should be able to iterate a LazyCollection (parallel)', async function(done) {
-    var ret = await this.collection.forEach(async (item, i) => {
+    var ret = await this.collection.forEach((item, i) => {
       this.verifyCollectionIntegrity(item, i);
     }, { sequential: false });
 
@@ -55,17 +57,17 @@ describe('LazyCollection', function() {
   });
 
   it('should be able to map a LazyCollection', async function(done) {
-    var rets = await this.collection.map(async (item, i) => {
+    var rets = await this.collection.map((item, i) => {
       this.verifyCollectionIntegrity(item, i);
       return { index: item.index, time: item.time, hello: `world@${item.index}` };
-    }, { sequential: true });
+    });
 
-    expect(rets).toBeType(Array);
-    rets.forEach((item, index) => this.testMappedItem(item, index));
+    expect(rets).toBeType(this.LazyCollection);
+    await rets.forEach((item, index) => this.testMappedItem(item, index));
 
     // Make sure none of the values have changed
     this.verifyIndex = 0;
-    await this.collection.forEach(async (item, i) => {
+    await this.collection.forEach((item, i) => {
       this.verifyCollectionIntegrity(item, i);
       expect(item.hello).toBeTheSame(undefined);
     }, { sequential: true });
@@ -74,17 +76,17 @@ describe('LazyCollection', function() {
   });
 
   it('should be able to map a LazyCollection (parallel)', async function(done) {
-    var rets = await this.collection.map(async (item, i) => {
+    var rets = await this.collection.map((item, i) => {
       this.verifyCollectionIntegrity(item, i);
       return { index: item.index, time: item.time, hello: `world@${item.index}` };
     }, { sequential: false });
 
-    expect(rets).toBeType(Array);
-    rets.forEach((item, index) => this.testMappedItem(item, index));
+    expect(rets).toBeType(this.LazyCollection);
+    await rets.forEach((item, index) => this.testMappedItem(item, index));
 
     // Make sure none of the values have changed
     this.verifyIndex = 0;
-    await this.collection.forEach(async (item, i) => {
+    await this.collection.forEach((item, i) => {
       this.verifyCollectionIntegrity(item, i);
       expect(item.hello).toBeTheSame(undefined);
     }, { sequential: false });
