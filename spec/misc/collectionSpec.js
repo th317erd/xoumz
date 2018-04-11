@@ -1,5 +1,7 @@
 describe('LazyCollection', function() {
   beforeEach(function() {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000;
+
     const { LazyCollection } = this.app.requireModule('./base/collections');
 
     this.LazyCollection = LazyCollection;
@@ -24,7 +26,7 @@ describe('LazyCollection', function() {
 
     this.asyncOp = () => {
       var index = this.asyncOpIndex++,
-          t = 10 + (Math.random() * 90);
+          t = 10 + (Math.random() * 40);
 
       return () => {
         return new Promise((resolve) => {
@@ -64,12 +66,29 @@ describe('LazyCollection', function() {
     var collection = this.LazyCollection.of(
       { index: 0 },
       { index: 1 },
-      { index: 3 }
+      { index: 2 }
     );
 
-    debugger;
-
     var ret = await collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
+    expect(ret).toBe(undefined);
+
+    done();
+  });
+
+  it('should be able to use concat', async function(done) {
+    var ret = await this.collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
+    expect(ret).toBe(undefined);
+
+    this.resetIntegrityCheck();
+
+    var collection = this.LazyCollection.of(
+      { index: this.asyncOpIndex },
+      { index: this.asyncOpIndex + 1 },
+      { index: this.asyncOpIndex + 2 }
+    );
+
+    var newCollection = this.collection.concat(collection);
+    var ret = await newCollection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
     expect(ret).toBe(undefined);
 
     done();
