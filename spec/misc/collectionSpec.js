@@ -18,6 +18,10 @@ describe('LazyCollection', function() {
       this.verifyIndex++;
     };
 
+    this.resetIntegrityCheck = () => {
+      this.verifyIndex = 0;
+    };
+
     this.asyncOp = () => {
       var index = this.asyncOpIndex++,
           t = 10 + (Math.random() * 90);
@@ -31,20 +35,42 @@ describe('LazyCollection', function() {
       };
     };
 
-    var collection = this.collection = new LazyCollection();
-    for (var i = 0, il = 5; i < il; i++)
-      collection.push(this.asyncOp());
+    var collection = this.collection = new LazyCollection(),
+        items = this.items = [];
+
+    for (var i = 0, il = 5; i < il; i++) {
+      var item = this.asyncOp();
+      items.push(item);
+      collection.push(item);
+    }
   });
 
   it('should be able to be constructed from "from"', async function(done) {
-    var array = [];
-    for (var i = 0, il = 5; i < il; i++)
-      array.push(this.asyncOp());
-
-    var collection = this.LazyCollection.from(array);
+    var collection = this.LazyCollection.from(this.items);
     var ret = await collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
 
-    expect(ret).toBeTheSame(undefined);
+    expect(ret).toBe(undefined);
+
+    done();
+  });
+
+  it('should be able to be constructed from "of"', async function(done) {
+    var collection = this.LazyCollection.of(...this.items);
+    var ret = await collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
+    expect(ret).toBe(undefined);
+
+    this.resetIntegrityCheck();
+
+    var collection = this.LazyCollection.of(
+      { index: 0 },
+      { index: 1 },
+      { index: 3 }
+    );
+
+    debugger;
+
+    var ret = await collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
+    expect(ret).toBe(undefined);
 
     done();
   });
