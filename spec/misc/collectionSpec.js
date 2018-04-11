@@ -36,6 +36,19 @@ describe('LazyCollection', function() {
       collection.push(this.asyncOp());
   });
 
+  it('should be able to be constructed from "from"', async function(done) {
+    var array = [];
+    for (var i = 0, il = 5; i < il; i++)
+      array.push(this.asyncOp());
+
+    var collection = this.LazyCollection.from(array);
+    var ret = await collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
+
+    expect(ret).toBeTheSame(undefined);
+
+    done();
+  });
+
   it('should be able to iterate a LazyCollection', async function(done) {
     var ret = await this.collection.forEach((item, i) => {
       this.verifyCollectionIntegrity(item, i);
