@@ -3,10 +3,12 @@ describe('LazyCollection', function() {
     //jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000;
 
     const { LazyCollection } = this.app.requireModule('./base/collections');
+    const COUNT = 5;
 
     this.LazyCollection = LazyCollection;
 
     this.asyncOpIndex = 0;
+    this.asyncOpValues = new Array(COUNT);
     this.verifyIndex = 0;
 
     this.testMappedItem = (item, index) => {
@@ -30,12 +32,15 @@ describe('LazyCollection', function() {
 
     this.asyncOp = () => {
       var index = this.asyncOpIndex++,
-          t = 10 + (Math.random() * 40);
+          t = 5 + (Math.random() * 20),
+          item = { index, time: t };
+
+      this.asyncOpValues[index] = item;
 
       return () => {
         return new Promise((resolve) => {
           setTimeout(() => {
-            resolve({ index, time: t });
+            resolve(item);
           }, t);
         });
       };
@@ -44,7 +49,7 @@ describe('LazyCollection', function() {
     var collection = this.collection = new LazyCollection(),
         items = this.items = [];
 
-    for (var i = 0, il = 5; i < il; i++) {
+    for (var i = 0, il = COUNT; i < il; i++) {
       var item = this.asyncOp();
       items.push(item);
       collection.push(item);
@@ -224,6 +229,168 @@ describe('LazyCollection', function() {
     this.verifyItemIntegrity(await c.index(3), 6);
     this.verifyItemIntegrity(await c.index(4), 3);
     this.verifyItemIntegrity(await c.index(5), 4);
+
+    done();
+  });
+
+  it('should be able to use indexOf', async function(done) {
+    var c = this.collection;
+
+    // Add same item to end (which shouldn't be found)
+    await c.push(this.asyncOpValues[2]);
+
+    // Find items
+    expect(await c.indexOf(this.asyncOpValues[2])).toBe(2);
+    expect(await c.indexOf(this.asyncOpValues[4])).toBe(4);
+    expect(await c.indexOf(this.asyncOpValues[0])).toBe(0);
+
+    // Can't find item when offset is beyond value
+    expect(await c.indexOf(this.asyncOpValues[1], 2)).toBe(-1);
+
+    // Make sure item CAN'T be found
+    expect(await c.indexOf('derp')).toBe(-1);
+
+    done();
+  });
+
+  it('should be able to use lastIndexOf', async function(done) {
+    var c = this.collection;
+
+    // Add same item to end (which should be found)
+    await c.push(this.asyncOpValues[2]);
+
+    // Find items
+    expect(await c.lastIndexOf(this.asyncOpValues[2])).toBe(5);
+    expect(await c.lastIndexOf(this.asyncOpValues[4])).toBe(4);
+    expect(await c.lastIndexOf(this.asyncOpValues[0])).toBe(0);
+
+    // Can't find item when offset is beyond value
+    expect(await c.lastIndexOf(this.asyncOpValues[2], 4)).toBe(2);
+
+    // Make sure item CAN'T be found
+    expect(await c.lastIndexOf('derp')).toBe(-1);
+
+    done();
+  });
+
+  it('should be able to use includes', async function(done) {
+    var c = this.collection;
+
+    expect(await c.includes(this.asyncOpValues[2])).toBe(true);
+    expect(await c.includes(this.asyncOpValues[4])).toBe(true);
+    expect(await c.includes('derp')).toBe(false);
+
+    done();
+  });
+
+  it('should be able to use filter', async function(done) {
+    var c = this.collection;
+
+    // Filter out even items
+    var newCollection = await c.filter((item, index) => {
+      expect(item.index).toBe(index);
+      return (index % 2);
+    });
+
+    expect(newCollection.length).toBe(2);
+    this.verifyItemIntegrity(await newCollection.index(0), 1);
+    this.verifyItemIntegrity(await newCollection.index(1), 3);
+
+    done();
+  });
+
+  it('should be able to use every', async function(done) {
+    // Should succeed
+    expect(await this.collection.every((item, index) => {
+      expect(item.index).toBe(index);
+      return (item.time > 0);
+    })).toBe(true);
+
+    // Should fail
+    expect(await this.collection.every((item, index) => {
+      expect(item.index).toBe(index);
+      return (item.index > 0);
+    })).toBe(false);
+
+    done();
+  });
+
+  it('should be able to use some', async function(done) {
+    // Should succeed
+    expect(await this.collection.some((item, index) => {
+      expect(item.index).toBe(index);
+      return (item.index > 2);
+    })).toBe(true);
+
+    // Should fail
+    expect(await this.collection.some((item, index) => {
+      expect(item.index).toBe(index);
+      return (item.index > 10);
+    })).toBe(false);
+
+    done();
+  });
+
+  it('should be able to use reduce', async function(done) {
+    expect(await this.collection.reduce((sum, item, index) => {
+      expect(item.index).toBe(index);
+      return sum * (sum * (item.index + 1));
+    }, 1)).toBe(1658880);
+
+    expect(await this.collection.reduce((_sum, item, index) => {
+      expect(item.index).toBe(index);
+
+      var sum = _sum;
+      if (typeof sum !== 'number')
+        sum = sum.index;
+
+      return (sum + 1) * ((sum + 1) * (item.index + 1));
+    })).toBe(49203845);
+
+    try {
+      var newCollection = new this.LazyCollection();
+      await newCollection.reduce(() => 0);
+      fail('Reduce call should have failed');
+    } catch (e) {
+      expect(e.message).toBe('Reduce of empty array with no initial value');
+    }
+
+    done();
+  });
+
+  it('should be able to use reduceRight', async function(done) {
+    expect(await this.collection.reduceRight((sum, item, index) => {
+      expect(item.index).toBe(index);
+      return sum * (sum * (item.index + 1));
+    }, 1)).toBe(3240000000000000000);
+
+    expect(await this.collection.reduceRight((_sum, item, index) => {
+      expect(item.index).toBe(index);
+
+      var sum = _sum;
+      if (typeof sum !== 'number')
+        sum = sum.index;
+
+      return (sum + 1) * ((sum + 1) * (item.index + 1));
+    })).toBe(3508914329163994600);
+
+    try {
+      var newCollection = new this.LazyCollection();
+      await newCollection.reduceRight(() => 0);
+      fail('Reduce call should have failed');
+    } catch (e) {
+      expect(e.message).toBe('Reduce of empty array with no initial value');
+    }
+
+    done();
+  });
+
+  it('should be able to iterate a LazyCollection', async function(done) {
+    var ret = await this.collection.forEach((item, i) => {
+      this.verifyCollectionIntegrity(item, i);
+    });
+
+    expect(ret).toBeTheSame(undefined);
 
     done();
   });
