@@ -26,13 +26,21 @@ describe('SchemaType', function() {
   });
 
   describe('External functionality', function() {
-    it('should be able to create a valid model', function() {
+    it('should be able to create a valid model', async function(done) {
       var user = this.user;
       debugger;
+
       expect(user.firstName.valueOf()).toBe('derp');
       expect(user.lastName.valueOf()).toBe('dude');
       expect(user.userName.valueOf()).toBe('test');
       expect(user.age.valueOf()).toBe(31);
+
+      var roles = await user.roles.all();
+      expect(roles).toBeType(Array);
+      expect(roles.length).toBe(4);
+      expect(roles.join(',')).toBe('derp,test,stuff,hello');
+
+      done();
     });
   });
 });

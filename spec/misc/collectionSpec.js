@@ -16,10 +16,15 @@ describe('LazyCollection', function() {
       expect(item.hello).toBeTheSame(`world@${index}`);
     };
 
-    this.verifyCollectionIntegrity = (item, index) => {
-      expect(index).toBeTheSame(this.verifyIndex);
+    this.verifyCollectionIntegrity = (item, index, reverse) => {
+      var i = (reverse) ? (this.collection.length - (index + 1)) : index;
+      expect(i).toBeTheSame(this.verifyIndex);
       expect(item.index).toBeTheSame(this.verifyIndex);
-      this.verifyIndex++;
+
+      if (reverse)
+        this.verifyIndex--;
+      else
+        this.verifyIndex++;
     };
 
     this.verifyItemIntegrity = (item, index) => {
@@ -56,10 +61,84 @@ describe('LazyCollection', function() {
     }
   });
 
+  it('should be able to iterate a LazyCollection', async function(done) {
+    var ret = await this.collection.forEach((item, i) => {
+      this.verifyCollectionIntegrity(item, i);
+    });
+
+    expect(ret).toBeTheSame(undefined);
+
+    done();
+  });
+
+  it('should be able to iterate a LazyCollection', async function(done) {
+    var ret = await this.collection.forEach((item, i) => {
+      this.verifyCollectionIntegrity(item, i);
+    });
+
+    expect(ret).toBeTheSame(undefined);
+
+    done();
+  });
+
+  it('should be able to map a LazyCollection', async function(done) {
+    var rets = await this.collection.map((item, i) => {
+      this.verifyCollectionIntegrity(item, i);
+      return { index: item.index, time: item.time, hello: `world@${item.index}` };
+    });
+
+    expect(rets).toBeType(this.LazyCollection);
+    await rets.forEach((item, index) => this.testMappedItem(item, index));
+
+    // Make sure none of the values have changed
+    this.verifyIndex = 0;
+    await this.collection.forEach((item, i) => {
+      this.verifyCollectionIntegrity(item, i);
+      expect(item.hello).toBeTheSame(undefined);
+    });
+
+    done();
+  });
+
+  it('should be able to access LazyCollection items directly', async function(done) {
+    expect(this.collection.length).toBeTheSame(5);
+
+    var item = await this.collection.index(4);
+    expect(item.index).toBeTheSame(4);
+
+    var item = await this.collection.index(1);
+    expect(item.index).toBeTheSame(1);
+
+    var item = await this.collection.index(0);
+    expect(item.index).toBeTheSame(0);
+
+    var item = await this.collection.index(3);
+    expect(item.index).toBeTheSame(3);
+
+    var item = await this.collection.index(2);
+    expect(item.index).toBeTheSame(2);
+
+    var item = await this.collection.first();
+    expect(item.index).toBeTheSame(0);
+
+    var item = await this.collection.last();
+    expect(item.index).toBeTheSame(4);
+
+    var items = await this.collection.all();
+    expect(items).toBeType(Array);
+    expect(items.length).toBeTheSame(5);
+    expect(items[0]).toBe(this.asyncOpValues[0]);
+    expect(items[1]).toBe(this.asyncOpValues[1]);
+    expect(items[2]).toBe(this.asyncOpValues[2]);
+    expect(items[3]).toBe(this.asyncOpValues[3]);
+    expect(items[4]).toBe(this.asyncOpValues[4]);
+
+    done();
+  });
+
   it('should be able to be constructed from "from"', async function(done) {
     var collection = this.LazyCollection.from(this.items);
     var ret = await collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
-
     expect(ret).toBe(undefined);
 
     done();
@@ -385,68 +464,90 @@ describe('LazyCollection', function() {
     done();
   });
 
-  it('should be able to iterate a LazyCollection', async function(done) {
-    var ret = await this.collection.forEach((item, i) => {
-      this.verifyCollectionIntegrity(item, i);
-    });
+  it('should be able to use join', async function(done) {
+    var newCollection = new this.LazyCollection('a', 'b', 'c', 'd');
 
-    expect(ret).toBeTheSame(undefined);
-
-    done();
-  });
-
-  it('should be able to iterate a LazyCollection', async function(done) {
-    var ret = await this.collection.forEach((item, i) => {
-      this.verifyCollectionIntegrity(item, i);
-    });
-
-    expect(ret).toBeTheSame(undefined);
+    expect(await newCollection.join()).toBe('a,b,c,d');
+    expect(await newCollection.join('-')).toBe('a-b-c-d');
+    expect(await newCollection.join(' ')).toBe('a b c d');
+    expect(await newCollection.join('_derp_')).toBe('a_derp_b_derp_c_derp_d');
 
     done();
   });
 
-  it('should be able to map a LazyCollection', async function(done) {
-    var rets = await this.collection.map((item, i) => {
-      this.verifyCollectionIntegrity(item, i);
-      return { index: item.index, time: item.time, hello: `world@${item.index}` };
+  it('should be able to use reverse', async function(done) {
+    var newCollection = new this.LazyCollection('a', 'b', 'c', 'd');
+
+    expect(await newCollection.reverse().join()).toBe('d,c,b,a');
+    expect(await newCollection.join('-')).toBe('d-c-b-a');
+    expect(await newCollection.reverse().join(' ')).toBe('a b c d');
+    expect(await newCollection.join('_derp_')).toBe('a_derp_b_derp_c_derp_d');
+
+    done();
+  });
+
+  it('should be able to use sort', async function(done) {
+    await this.collection.sort((a, b) => {
+      var x = a.index,
+          y = b.index;
+
+      return (x == y) ? 0 : (x < y) ? 1 : -1;
     });
 
-    expect(rets).toBeType(this.LazyCollection);
-    await rets.forEach((item, index) => this.testMappedItem(item, index));
+    this.verifyIndex = 4;
+    var ret = await this.collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i, true));
+    expect(ret).toBe(undefined);
 
-    // Make sure none of the values have changed
+    await this.collection.sort((a, b) => {
+      var x = a.index,
+          y = b.index;
+
+      return (x == y) ? 0 : (x < y) ? -1 : 1;
+    });
+
     this.verifyIndex = 0;
-    await this.collection.forEach((item, i) => {
-      this.verifyCollectionIntegrity(item, i);
-      expect(item.hello).toBeTheSame(undefined);
-    });
+    var ret = await this.collection.forEach((item, i) => this.verifyCollectionIntegrity(item, i));
+    expect(ret).toBe(undefined);
 
     done();
   });
 
-  it('should be able to access LazyCollection items directly', async function(done) {
-    expect(this.collection.length).toBeTheSame(5);
+  it('should be able to use find', async function(done) {
+    expect(await this.collection.find((item) => (item.index === 2))).toBe(this.asyncOpValues[2]);
+    expect(await this.collection.find((item) => (item.index === 4))).toBe(this.asyncOpValues[4]);
+    expect(await this.collection.find((item) => (item.index === 0))).toBe(this.asyncOpValues[0]);
+    expect(await this.collection.find((item) => (item.index === -1))).toBe(undefined);
 
-    var item = await this.collection.index(4);
-    expect(item.index).toBeTheSame(4);
+    done();
+  });
 
-    var item = await this.collection.index(1);
-    expect(item.index).toBeTheSame(1);
+  it('should be able to use findIndex', async function(done) {
+    expect(await this.collection.findIndex((item) => (item.index === 2))).toBe(2);
+    expect(await this.collection.findIndex((item) => (item.index === 4))).toBe(4);
+    expect(await this.collection.findIndex((item) => (item.index === 0))).toBe(0);
+    expect(await this.collection.findIndex((item) => (item.index === -1))).toBe(-1);
 
-    var item = await this.collection.index(0);
-    expect(item.index).toBeTheSame(0);
+    done();
+  });
 
-    var item = await this.collection.index(3);
-    expect(item.index).toBeTheSame(3);
+  it('should be able to access by key', async function(done) {
+    var c = this.collection;
 
-    var item = await this.collection.index(2);
-    expect(item.index).toBeTheSame(2);
+    expect(await c[0]).toBe(this.asyncOpValues[0]);
+    expect(await c[1]).toBe(this.asyncOpValues[1]);
+    expect(await c[2]).toBe(this.asyncOpValues[2]);
+    expect(await c[3]).toBe(this.asyncOpValues[3]);
+    expect(await c[4]).toBe(this.asyncOpValues[4]);
+    expect(await c[5]).toBe(undefined);
 
-    var item = await this.collection.first();
-    expect(item.index).toBeTheSame(0);
+    // Delete an item
+    await c.splice(4, 1);
+    expect(await c[4]).toBe(undefined);
 
-    var item = await this.collection.last();
-    expect(item.index).toBeTheSame(4);
+    // Make sure index keys have been updated
+    var keys = Object.keys(c);
+    expect(keys).toBeType(Array);
+    expect(keys.length).toBe(4);
 
     done();
   });
