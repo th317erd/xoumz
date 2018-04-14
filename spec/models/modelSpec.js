@@ -4,9 +4,11 @@ describe('SchemaType', function() {
     const { ModelSchema } = this.app.requireModule('./schema/model-schema');
     const { Session } = this.app.requireModule('./models/session');
     const { User } = this.app.requireModule('./models/user');
+    const { LazyCollection } = this.app.requireModule('./base/collections');
 
     this.SchemaEngine = SchemaEngine;
     this.ModelSchema = ModelSchema;
+    this.LazyCollection = LazyCollection;
 
     this.schemaEngine = new SchemaEngine({
       Session,
@@ -28,7 +30,6 @@ describe('SchemaType', function() {
   describe('External functionality', function() {
     it('should be able to create a valid model', async function(done) {
       var user = this.user;
-      debugger;
 
       expect(user.firstName.valueOf()).toBe('derp');
       expect(user.lastName.valueOf()).toBe('dude');
@@ -39,6 +40,25 @@ describe('SchemaType', function() {
       expect(roles).toBeType(Array);
       expect(roles.length).toBe(4);
       expect(roles.join(',')).toBe('derp,test,stuff,hello');
+
+      done();
+    });
+
+    fit('should be able to set properties on a model', async function(done) {
+      var user = this.user;
+
+      user.firstName = 'WOW!!!';
+      expect(user.firstName).toBeType(String);
+      expect(user.firstName.valueOf()).toBe('WOW!!!');
+
+      user.roles = ['hello', 'world'];
+      expect(user.roles).toBeType(this.LazyCollection);
+      expect(user.roles.length).toBe(2);
+
+      // Should not be able to set a virtual property
+      user.age = 52;
+      expect(user.age).toBeType(Number);
+      expect(user.age.valueOf()).toBe(31);
 
       done();
     });
