@@ -28,7 +28,7 @@ describe('SchemaType', function() {
   });
 
   describe('External functionality', function() {
-    it('should be able to create a valid model', async function(done) {
+    it('should be able to decompose a valid model', async function(done) {
       var user = this.user;
 
       expect(user.firstName.valueOf()).toBe('derp');
