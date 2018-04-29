@@ -40,7 +40,8 @@
     "setTimeout": false,
     "fetch": true,
     "Proxy": false,
-    "performance": false
+    "performance": false,
+    "Symbol": false
   },
 
   "rules": {
