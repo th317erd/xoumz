@@ -1,5 +1,6 @@
-fdescribe('ModelSchema', function() {
+describe('ModelSchema', function() {
   beforeEach(function() {
+    const { instanceOf } = this.app.requireModule('./base/utils');
     const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
     const { ModelSchema } = this.app.requireModule('./schema/model-schema');
     const { Session } = this.app.requireModule('./models/session');
@@ -41,6 +42,17 @@ fdescribe('ModelSchema', function() {
       Session,
       User: CustomUser
     });
+
+    var user = this.schemaEngine.create('User', {
+      firstName: 'derp',
+      lastName: 'dude',
+      userName: 'test',
+      dob: '1986-10-16T00:00:00.000Z',
+      roles: ['derp', 'test', 'stuff', 'hello']
+    });
+
+    var doesInherit = instanceOf(CustomUser, 'User');
+    debugger;
   });
 
   it('should be able to define a model schema', function() {

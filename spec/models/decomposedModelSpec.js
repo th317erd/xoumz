@@ -44,7 +44,7 @@ describe('SchemaType', function() {
       done();
     });
 
-    fit('should be able to set properties on a model', async function(done) {
+    it('should be able to set properties on a model', async function(done) {
       var user = this.user;
 
       user.firstName = 'WOW!!!';
