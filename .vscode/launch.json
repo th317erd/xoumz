@@ -13,6 +13,22 @@
         "name": "Unit Tests",
         "program": "${workspaceRoot}/node_modules/.bin/jasmine",
         "cwd": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "ModelSpec Unit Test",
+        "program": "${workspaceRoot}/node_modules/.bin/jasmine",
+        "args": ["spec/models/modelSpec.js"],
+        "cwd": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "ModelSchemaSpec Unit Test",
+        "program": "${workspaceRoot}/node_modules/.bin/jasmine",
+        "args": ["spec/schema/modelSchemaSpec.js"],
+        "cwd": "${workspaceRoot}"
       }
     ]
   }

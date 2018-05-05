@@ -1,12 +1,7 @@
 describe('ModelSchema', function() {
-  beforeEach(function() {
-    const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
-    const { ModelSchema } = this.app.requireModule('./schema/model-schema');
-    const { Session } = this.app.requireModule('./models/session');
-    const { User } = this.app.requireModule('./models/user');
-
-    this.SchemaEngine = SchemaEngine;
-    this.ModelSchema = ModelSchema;
+  beforeEach(async function() {
+    const { SchemaEngine, ModelSchema } = this.app.Schema;
+    const { User, Session } = this.app.Model.Models;
 
     class CustomUser extends User {
       static schema(defineSchema) {
@@ -34,13 +29,13 @@ describe('ModelSchema', function() {
       }
     }
 
-    this.Session = Session;
     this.User = CustomUser;
+    this.ModelSchema = ModelSchema;
 
-    this.schemaEngine = new SchemaEngine({
+    this.schemaEngine = await this.app.registerEngine(new SchemaEngine({
       Session,
       User: CustomUser
-    });
+    }));
   });
 
   it('should be able to define a model schema', function() {

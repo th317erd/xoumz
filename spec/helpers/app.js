@@ -239,6 +239,8 @@ beforeAll(function(done) {
 
   jasmine.addMatchers(customMatchers);
 
+  debugger;
+
   var application;
   const testChildModelData = {
           id: 'Test:2',

@@ -1,8 +1,8 @@
 describe('SchemaEngine', function() {
   beforeEach(function() {
     const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
-    const { Session } = this.app.requireModule('./models/session');
-    const { User } = this.app.requireModule('./models/user');
+    const { Session } = this.app.requireModule('./models');
+    const { User } = this.app.requireModule('./models');
 
     this.SchemaEngine = SchemaEngine;
     this.Session = Session;

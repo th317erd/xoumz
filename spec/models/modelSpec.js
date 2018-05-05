@@ -1,19 +1,9 @@
 describe('SchemaType', function() {
   beforeEach(function() {
-    const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
-    const { ModelSchema } = this.app.requireModule('./schema/model-schema');
-    const { Session } = this.app.requireModule('./models/session');
-    const { User } = this.app.requireModule('./models/user');
-    const { LazyCollection } = this.app.requireModule('./base/collections');
+    const { LazyCollection } = this.app;
 
-    this.SchemaEngine = SchemaEngine;
-    this.ModelSchema = ModelSchema;
     this.LazyCollection = LazyCollection;
-
-    this.schemaEngine = new SchemaEngine({
-      Session,
-      User
-    });
+    this.schemaEngine = this.app.getEngine('schema');
 
     this.user = this.schemaEngine.create('User', {
       firstName: 'derp',

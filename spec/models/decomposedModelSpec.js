@@ -2,8 +2,8 @@ describe('SchemaType', function() {
   beforeEach(function() {
     const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
     const { ModelSchema } = this.app.requireModule('./schema/model-schema');
-    const { Session } = this.app.requireModule('./models/session');
-    const { User } = this.app.requireModule('./models/user');
+    const { Session } = this.app.requireModule('./models');
+    const { User } = this.app.requireModule('./models');
     const { LazyCollection } = this.app.requireModule('./base/collections');
 
     this.SchemaEngine = SchemaEngine;
