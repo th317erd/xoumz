@@ -1,7 +1,7 @@
 describe('ModelSchema', function() {
   beforeEach(async function() {
     const { SchemaEngine, ModelSchema } = this.app.Schema;
-    const { User, Session } = this.app.Model.Models;
+    const { User, Session } = this.app.Models;
 
     class CustomUser extends User {
       static schema(defineSchema) {

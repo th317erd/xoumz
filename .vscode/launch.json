@@ -29,6 +29,14 @@
         "program": "${workspaceRoot}/node_modules/.bin/jasmine",
         "args": ["spec/schema/modelSchemaSpec.js"],
         "cwd": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "SchemaEngineSpec Unit Test",
+        "program": "${workspaceRoot}/node_modules/.bin/jasmine",
+        "args": ["spec/schema/schemaEngineSpec.js"],
+        "cwd": "${workspaceRoot}"
       }
     ]
   }

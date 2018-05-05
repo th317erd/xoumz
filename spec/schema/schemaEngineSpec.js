@@ -1,16 +1,15 @@
 describe('SchemaEngine', function() {
   beforeEach(function() {
-    const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
-    const { Session } = this.app.requireModule('./models');
-    const { User } = this.app.requireModule('./models');
+    const { SchemaEngine } = this.app.Schema;
+    const { User, Session } = this.app.Models;
 
     this.SchemaEngine = SchemaEngine;
     this.Session = Session;
     this.User = User;
   });
 
-  it('should be able to get a model schema', function() {
-    var schemaEngine = new this.SchemaEngine({
+  it('should be able to get a model schema', async function(done) {
+    var schemaEngine = await this.app.createEngine(this.SchemaEngine, {
           Session: this.Session,
           User: this.User
         }),
@@ -30,9 +29,11 @@ describe('SchemaEngine', function() {
     expect(rawSchema.id).toBeTruthy();
     expect(rawSchema.createdAt).toBeTruthy();
     expect(rawSchema.updatedAt).toBeTruthy();
+
+    done();
   });
 
-  it('should be able to inherit from a model', function() {
+  it('should be able to inherit from a model', async function(done) {
     const UserModel = this.User;
 
     class MyCustomUser extends UserModel {
@@ -49,7 +50,7 @@ describe('SchemaEngine', function() {
       }
     }
 
-    var schemaEngine = new this.SchemaEngine({
+    var schemaEngine = await this.app.createEngine(this.SchemaEngine, {
           Session: this.Session,
           User: MyCustomUser
         }),
@@ -69,5 +70,7 @@ describe('SchemaEngine', function() {
     expect(rawSchema.id).toBeTruthy();
     expect(rawSchema.createdAt).toBeTruthy();
     expect(rawSchema.updatedAt).toBeTruthy();
+
+    done();
   });
 });
