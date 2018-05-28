@@ -119,10 +119,11 @@ beforeAll(function(done) {
         var schemaEngine = this.getSchemaEngine(),
             connectorEngine = this.getConnectorEngine();
 
-        schemaEngine.registerModelType('User', this.Models.User);
-        schemaEngine.registerModelType('Test', function(ModelBase) {
-          return
-        });
+        // schemaEngine.registerModelType('Session', this.Models.Session);
+        // schemaEngine.registerModelType('User', this.Models.User);
+        // schemaEngine.registerModelType('Test', function(ModelBase) {
+        //   return
+        // });
 
         connectorEngine.register(new this.SQLiteConnector());
       }
@@ -263,9 +264,18 @@ beforeAll(function(done) {
       compareFunc(testArray[i], i, staticArray);
   };
 
-  this.createTestModel = async () => {
-    var model = await application.getEngine('schema').create('Test', testModelData);
-    return model;
+  this.createTestUser = () => {
+    return  application.getEngine('schema').create('User', {
+      firstName: 'derp',
+      lastName: 'dude',
+      userName: 'test',
+      dob: '1986-10-16T00:00:00.000Z',
+      roles: ['derp', 'test', 'stuff', 'hello']
+    });
+  };
+
+  this.createTestModel = () => {
+    return application.getEngine('schema').create('Test', testModelData);
   };
 
   this.testModel = modelTester.bind(this, testModelData, null);

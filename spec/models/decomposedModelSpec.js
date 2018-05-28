@@ -1,27 +1,9 @@
 describe('SchemaType', function() {
   beforeEach(function() {
-    const { SchemaEngine } = this.app.requireModule('./schema/schema-engine');
-    const { ModelSchema } = this.app.requireModule('./schema/model-schema');
-    const { Session } = this.app.requireModule('./models');
-    const { User } = this.app.requireModule('./models');
     const { LazyCollection } = this.app.requireModule('./base/collections');
-
-    this.SchemaEngine = SchemaEngine;
-    this.ModelSchema = ModelSchema;
     this.LazyCollection = LazyCollection;
 
-    this.schemaEngine = new SchemaEngine({
-      Session,
-      User
-    });
-
-    this.user = this.schemaEngine.create('User', {
-      firstName: 'derp',
-      lastName: 'dude',
-      userName: 'test',
-      dob: '1986-10-16T00:00:00.000Z',
-      roles: ['derp', 'test', 'stuff', 'hello']
-    });
+    this.user = this.createTestUser();
   });
 
   describe('Internal functionality', function() {
