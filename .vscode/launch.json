@@ -50,6 +50,14 @@
       {
         "type": "node",
         "request": "launch",
+        "name": "SchemaTypeSpec Unit Test",
+        "program": "${workspaceRoot}/node_modules/.bin/jasmine",
+        "args": ["spec/schema/schemaTypeSpec.js"],
+        "cwd": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
         "name": "PermissibleSpec Unit Test",
         "program": "${workspaceRoot}/node_modules/.bin/jasmine",
         "args": ["spec/security/permissibleSpec.js"],

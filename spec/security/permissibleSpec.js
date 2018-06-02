@@ -7,9 +7,17 @@ describe('Security', function() {
     this.model = this.createTestModel();
     this.user = this.createTestUser();
 
-    this.session = this.schemaEngine.create('Session', {
-      validAt: moment().toISOString()
-    });
+    try {
+      debugger;
+      this.session = this.schemaEngine.create('Session', {
+        owner: {
+
+        },
+        validAt: moment().toISOString()
+      });
+    } catch (e) {
+      debugger;
+    }
   });
 
   describe('Internal functionality', function() {
@@ -17,9 +25,10 @@ describe('Security', function() {
   });
 
   describe('External functionality', function() {
-    it('should be able to get perspective permissions on child', function() {
+    it('should be able to get perspective permissions on child', async function() {
       debugger;
-      console.log('OWNER VALUE', this.session.owner);
+      var owner = await this.session.owner;
+      debugger;
       this.session.owner = this.user;
       debugger;
       var level = this.model.getPermissionLevel(this.model.children[0]);

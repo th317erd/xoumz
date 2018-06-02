@@ -47,14 +47,14 @@ describe('SchemaType', function() {
 
   it('should be able to create a model', function() {
     var field = this.field.finalize(),
-        model = field.instantiate(''),
+        model = field.instantiate(field, ''),
         errors = model.validate();
 
     expect(errors).toBeArray(1);
     expect(errors[0]).toBe('Value required for test_field');
     expect(model.valueOf()).toBe('');
 
-    var model2 = field.instantiate('Test'),
+    var model2 = field.instantiate(field, 'Test'),
         errors2 = model2.validate();
 
     expect(errors2).toBe(undefined);
