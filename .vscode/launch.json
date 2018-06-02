@@ -62,6 +62,14 @@
         "program": "${workspaceRoot}/node_modules/.bin/jasmine",
         "args": ["spec/security/permissibleSpec.js"],
         "cwd": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "QuerySpec Unit Test",
+        "program": "${workspaceRoot}/node_modules/.bin/jasmine",
+        "args": ["spec/misc/querySpec.js"],
+        "cwd": "${workspaceRoot}"
       }
     ]
   }
