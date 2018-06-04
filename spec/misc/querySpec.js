@@ -8,7 +8,7 @@ describe('QueryUtils', function() {
       cb.type('FakeModel2').field('stuff').not().equals('wow').or((cb) => {
         cb.field('field1').equals('value1').or().field('field2').gte(56);
       });
-    }).or().field('derp').equals('"hello" world? Yeah "right"').or().field('between').not().between(11, 234, true).field("bool").equals(true).field("many").not().contains("derp", true, 45.65);
+    }).or().field('derp').equals('"hello" world? Yeah "right"').or().field('between').not().between(11, 234, true).field('bool').equals(true).field('many').not().contains('derp', true, 45.65);
   });
 
   it('should be able to serialize a QueryBuilder instance', function() {
