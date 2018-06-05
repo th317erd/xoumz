@@ -6,11 +6,11 @@ describe('ModelSchema', function() {
     class CustomUser extends User {
       static schema(defineSchema) {
         return defineSchema(User.schema, {
-          schema: function({ User, Role, String, Date, Integer, Collection }, parent) {
+          schema: function({ User, Role, String, Date, Integer, Collection }, typeName, parentSchema) {
             // Rename the "dob" field to "dateOfBirth"
-            return Object.assign(parent, {
+            return Object.assign(parentSchema, {
               dob: null,
-              dateOfBirth: parent.dob.clone().field('dateOfBirth')
+              dateOfBirth: parentSchema.dob.clone().field('dateOfBirth')
             });
           },
           demote: function(values, _opts) {
@@ -106,7 +106,7 @@ describe('ModelSchema', function() {
       getTypeName: () => 'User',
       schema: (defineSchema) => {
         return defineSchema(this.User.schema, {
-          schema: function({ String }, parentSchema) {
+          schema: function({ String }, typeName, parentSchema) {
             return Object.assign(parentSchema, {
               'derp': String.maxLength(128).nullable(false)
             });

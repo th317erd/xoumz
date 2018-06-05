@@ -39,7 +39,7 @@ describe('SchemaEngine', function() {
     class MyCustomUser extends UserModel {
       static schema(defineSchema) {
         return defineSchema(UserModel.schema, {
-          schema: ({ String }, parentSchema) => {
+          schema: ({ String }, typeName, parentSchema) => {
             return Object.assign(parentSchema, {
               derp: String.nullable(false).maxLength(24)
             });

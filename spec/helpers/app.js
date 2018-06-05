@@ -138,7 +138,7 @@ beforeAll(function(done) {
       // }
 
       async initialize() {
-        const { ModelBase, User, Session, Scope } = this.Models;
+        const { ModelBase, User, Session, Scope, OwnerScope } = this.Models;
         const { SchemaEngine } = this.Schema;
 
         class Test extends ModelBase {
@@ -163,6 +163,7 @@ beforeAll(function(done) {
 
         this.registerEngine(new SchemaEngine({
           Scope,
+          OwnerScope,
           Session,
           User,
           Test
