@@ -20,23 +20,23 @@
   "author": "Wyatt Greenway",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^4.0.3",
+    "better-sqlite3": "^4.1.1",
     "busboy": "^0.2.14",
     "crypto-js": "^3.1.9-1",
     "janap": "^1.0.5",
-    "mime-db": "^1.32.0",
-    "moment": "^2.20.1",
-    "safe-buffer": "^5.1.1",
-    "sqlstring": "^2.3.0"
+    "mime-db": "^1.34.0",
+    "moment": "^2.22.2",
+    "safe-buffer": "^5.1.2",
+    "sqlstring": "^2.3.1"
   },
   "devDependencies": {
-    "babel-eslint": "^8.2.1",
-    "eslint": "^4.16.0",
+    "babel-eslint": "^8.2.3",
+    "eslint": "^4.19.1",
     "eslint-plugin-analyze": "^1.1.2",
     "eslint-plugin-extra-syntax": "^1.0.0",
-    "eslint-plugin-jasmine": "^2.9.1",
+    "eslint-plugin-jasmine": "^2.10.1",
     "eslint-plugin-require-path-exists": "git+https://github.com/th317erd/eslint-plugin-require-path-exists.git#dist",
-    "jasmine": "^3.0.0",
-    "request": "^2.83.0"
+    "jasmine": "^3.1.0",
+    "request": "^2.87.0"
   }
 }

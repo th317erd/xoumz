@@ -70,6 +70,14 @@
         "program": "${workspaceRoot}/node_modules/.bin/jasmine",
         "args": ["spec/misc/querySpec.js"],
         "cwd": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "SQLite Unit Test",
+        "program": "${workspaceRoot}/node_modules/.bin/jasmine",
+        "args": ["spec/connector/sqliteSpec.js"],
+        "cwd": "${workspaceRoot}"
       }
     ]
   }

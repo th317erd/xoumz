@@ -111,22 +111,12 @@ beforeAll(function(done) {
         });
       }
 
-      async onStartupCheck() {
-        // Skip startup check for tests
-      }
+      // async onSchemaEngineBeforeStart() {
+      //   var schemaEngine = this.getSchemaEngine(),
+      //       connectorEngine = this.getConnectorEngine();
 
-      async onSchemaEngineBeforeStart() {
-        var schemaEngine = this.getSchemaEngine(),
-            connectorEngine = this.getConnectorEngine();
-
-        // schemaEngine.registerModelType('Session', this.Models.Session);
-        // schemaEngine.registerModelType('User', this.Models.User);
-        // schemaEngine.registerModelType('Test', function(ModelBase) {
-        //   return
-        // });
-
-        connectorEngine.register(new this.SQLiteConnector());
-      }
+      //   connectorEngine.register(new this.SQLiteConnector());
+      // }
 
       // async onRouteEngineStart() {
       //   var routeEngine = this.getRouteEngine();
@@ -140,6 +130,7 @@ beforeAll(function(done) {
       async initialize() {
         const { ModelBase, User, Session, Scope, OwnerScope } = this.Models;
         const { SchemaEngine } = this.Schema;
+        const { ConnectorEngine, SQLiteConnector } = this.Connectors;
 
         class Test extends ModelBase {
           static schema(defineSchema) {
@@ -167,6 +158,12 @@ beforeAll(function(done) {
           Session,
           User,
           Test
+        }));
+
+        this.registerEngine(new ConnectorEngine({
+          connectors: [
+            new SQLiteConnector()
+          ]
         }));
 
         return await super.initialize();
