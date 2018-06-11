@@ -1,4 +1,4 @@
-describe('QueryUtils', function() {
+describe('QueryBuilder', function() {
   beforeEach(function() {
     const { QueryBuilder } = this.app.requireModule('./base/query-builder');
     this.QueryBuilder = QueryBuilder;
