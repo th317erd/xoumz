@@ -162,7 +162,9 @@ beforeAll(function(done) {
 
         this.registerEngine(new ConnectorEngine({
           connectors: [
-            new SQLiteConnector()
+            new SQLiteConnector({
+              databasePath: '/tmp/xoumz.sqlite'
+            })
           ]
         }));
 
