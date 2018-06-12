@@ -1,7 +1,7 @@
 describe('SchemaType', function() {
   beforeEach(function() {
-    this.defaultSchemaTypes = this.app.requireModule('./schema/primitive-model-types');
-    this.field = this.defaultSchemaTypes.String.getType().field('test_field').value('derp').required.maxLength(10).nullable(false);
+    var schemaEngine = this.schemaEngine = this.app.getEngine('schema');
+    this.field = schemaEngine.getType('String').getSchemaType().field('test_field').value('derp').required.maxLength(10).nullable(false);
   });
 
   it('should be able to define a field', function() {
@@ -60,7 +60,7 @@ describe('SchemaType', function() {
     expect(errors2).toBe(undefined);
     expect(model2.valueOf()).toBe('Test');
 
-    var field2 = this.defaultSchemaTypes.String.getType().finalize();
+    var field2 = this.schemaEngine.getType('String').getSchemaType().finalize();
     expect(model instanceof model2.getBaseModelClass()).toBe(true);
     expect(model instanceof field2.getBaseModelClass()).toBe(true);
   });
