@@ -16,7 +16,7 @@ describe('SchemaEngine', function() {
         modelSchema = schemaEngine.getModelClass('User').getSchema();
 
     var definition = modelSchema.getSchemaDefinition(),
-        rawSchema = modelSchema.getSchema();
+        rawSchema = modelSchema.getRawSchema();
 
     expect(modelSchema.getTypeName()).toBe('User');
     expect(definition.version).toBe(1);
@@ -57,7 +57,7 @@ describe('SchemaEngine', function() {
         modelSchema = schemaEngine.getModelClass('User').getSchema();
 
     var definition = modelSchema.getSchemaDefinition(),
-        rawSchema = modelSchema.getSchema();
+        rawSchema = modelSchema.getRawSchema();
 
     expect(modelSchema.getTypeName()).toBe('User');
     expect(definition.version).toBe(2);

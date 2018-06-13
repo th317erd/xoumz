@@ -42,7 +42,7 @@ describe('ModelSchema', function() {
     var modelSchema = new this.ModelSchema(this.schemaEngine, { getTypeName: () => 'User', schema: this.User.schema });
 
     var definition = modelSchema.getSchemaDefinition(),
-        rawSchema = modelSchema.getSchema();
+        rawSchema = modelSchema.getRawSchema();
 
     expect(definition.version).toBe(2);
     expect(definition.schema).toBeType(Function);
@@ -75,7 +75,7 @@ describe('ModelSchema', function() {
     modelSchema = modelSchema.cloneWithVersion(1);
 
     var definition = modelSchema.getSchemaDefinition(),
-        rawSchema = modelSchema.getSchema();
+        rawSchema = modelSchema.getRawSchema();
 
     expect(definition.version).toBe(1);
     expect(definition.schema).toBeType(Function);
@@ -118,7 +118,7 @@ describe('ModelSchema', function() {
     });
 
     var definition = modelSchema.getSchemaDefinition(),
-        rawSchema = modelSchema.getSchema();
+        rawSchema = modelSchema.getRawSchema();
 
     expect(definition.version).toBe(3);
     expect(definition.schema).toBeType(Function);
