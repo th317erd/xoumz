@@ -9,10 +9,10 @@ describe('SchemaEngine', function() {
   });
 
   it('should be able to get a model schema', async function(done) {
-    var schemaEngine = await this.app.createEngine(this.SchemaEngine, {
-          Session: this.Session,
-          User: this.User
-        }),
+    var schemaEngine = await this.app.createEngine(this.SchemaEngine, [
+          this.Session,
+          this.User
+        ]),
         modelSchema = schemaEngine.getModelClass('User').getSchema();
 
     var definition = modelSchema.getSchemaDefinition(),
@@ -36,30 +36,32 @@ describe('SchemaEngine', function() {
   it('should be able to inherit from a model', async function(done) {
     const UserModel = this.User;
 
-    class MyCustomUser extends UserModel {
-      static schema(defineSchema) {
-        return defineSchema(UserModel.schema, {
-          schema: ({ String }, typeName, parentSchema) => {
-            return Object.assign(parentSchema, {
-              derp: String.nullable(false).maxLength(24)
-            });
-          },
-          demote: (model) => model,
-          promote: (model) => model
-        });
-      }
-    }
+    const MyCustomUser = this.app.defineClass((UserModel) => {
+      return class MyCustomUser extends UserModel {
+        static schema(defineSchema) {
+          return defineSchema(UserModel.schema, {
+            schema: ({ String }, typeName, parentSchema) => {
+              return Object.assign(parentSchema, {
+                derp: String.nullable(false).maxLength(24)
+              });
+            },
+            demote: (model) => model,
+            promote: (model) => model
+          });
+        }
+      };
+    }, UserModel);
 
-    var schemaEngine = await this.app.createEngine(this.SchemaEngine, {
-          Session: this.Session,
-          User: MyCustomUser
-        }),
-        modelSchema = schemaEngine.getModelClass('User').getSchema();
+    var schemaEngine = await this.app.createEngine(this.SchemaEngine, [
+          this.Session,
+          MyCustomUser
+        ]),
+        modelSchema = schemaEngine.getModelClass('MyCustomUser').getSchema();
 
     var definition = modelSchema.getSchemaDefinition(),
         rawSchema = modelSchema.getRawSchema();
 
-    expect(modelSchema.getTypeName()).toBe('User');
+    expect(modelSchema.getTypeName()).toBe('MyCustomUser');
     expect(definition.version).toBe(2);
     expect(definition.schema).toBeType(Function);
     expect(definition.demote).toBeType(Function);

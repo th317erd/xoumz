@@ -111,54 +111,40 @@ beforeAll(function(done) {
         });
       }
 
-      // async onSchemaEngineBeforeStart() {
-      //   var schemaEngine = this.getSchemaEngine(),
-      //       connectorEngine = this.getConnectorEngine();
-
-      //   connectorEngine.register(new this.SQLiteConnector());
-      // }
-
-      // async onRouteEngineStart() {
-      //   var routeEngine = this.getRouteEngine();
-      //   routeEngine.registerRoute((Route) => {
-      //     return class TestRoute extends Route {
-
-      //     };
-      //   });
-      // }
-
       async initialize() {
         const { ModelBase, User, Session, Scope, OwnerScope } = this.Models;
         const { SchemaEngine } = this.Schema;
         const { ConnectorEngine, SQLiteConnector } = this.Connectors;
 
-        class Test extends ModelBase {
-          static schema(defineSchema) {
-            return defineSchema(null, {
-              schema: function({ String, Integer, Boolean, Date, Test, Collection }) {
-                return {
-                  'string': String,
-                  'integer': Integer,
-                  'boolean': Boolean,
-                  'date': Date,
-                  'stringArray': Collection(String),
-                  'integerArray': Collection(Integer),
-                  'children': Collection(Test)
-                };
-              },
-              demote: (values) => values,
-              promote: (values) => values,
-            });
-          }
-        }
+        const Test = this.defineClass((ModelBase) => {
+          return class Test extends ModelBase {
+            static schema(defineSchema) {
+              return defineSchema(null, {
+                schema: function({ String, Integer, Boolean, Date, Test, Collection }) {
+                  return {
+                    'string': String,
+                    'integer': Integer,
+                    'boolean': Boolean,
+                    'date': Date,
+                    'stringArray': Collection(String),
+                    'integerArray': Collection(Integer),
+                    'children': Collection(Test)
+                  };
+                },
+                demote: (values) => values,
+                promote: (values) => values,
+              });
+            }
+          };
+        }, ModelBase);
 
-        this.registerEngine(new SchemaEngine({
+        this.registerEngine(new SchemaEngine([
           Scope,
           OwnerScope,
           Session,
           User,
           Test
-        }));
+        ]));
 
         this.registerEngine(new ConnectorEngine({
           connectors: [

@@ -47,21 +47,21 @@ describe('SchemaType', function() {
 
   it('should be able to create a model', function() {
     var field = this.field.finalize(),
-        model = field.instantiate(field, ''),
+        model = field.instantiate(''),
         errors = model.validate();
 
     expect(errors).toBeArray(1);
     expect(errors[0]).toBe('Value required for test_field');
     expect(model.valueOf()).toBe('');
 
-    var model2 = field.instantiate(field, 'Test'),
+    var model2 = field.instantiate('Test'),
         errors2 = model2.validate();
 
     expect(errors2).toBe(undefined);
     expect(model2.valueOf()).toBe('Test');
 
     var field2 = this.schemaEngine.getType('String').getSchemaType().finalize();
-    expect(model instanceof model2.getBaseModelClass()).toBe(true);
-    expect(model instanceof field2.getBaseModelClass()).toBe(true);
+    expect(model instanceof model2.getModelClass()).toBe(true);
+    expect(model instanceof field2.getModelClass()).toBe(true);
   });
 });

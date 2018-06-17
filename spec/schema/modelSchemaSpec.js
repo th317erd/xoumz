@@ -3,43 +3,49 @@ describe('ModelSchema', function() {
     const { SchemaEngine, ModelSchema } = this.app.Schema;
     const { User, Session } = this.app.Models;
 
-    class CustomUser extends User {
-      static schema(defineSchema) {
-        return defineSchema(User.schema, {
-          schema: function({ User, Role, String, Date, Integer, Collection }, typeName, parentSchema) {
-            // Rename the "dob" field to "dateOfBirth"
-            return Object.assign(parentSchema, {
-              dob: null,
-              dateOfBirth: parentSchema.dob.clone().field('dateOfBirth')
-            });
-          },
-          demote: function(values, _opts) {
-            // Properly demote
-            return Object.assign(values, {
-              dob: values.dateOfBirth
-            });
-          },
-          promote: function(values, _opts) {
-            // Properly promote
-            return Object.assign(values, {
-              dateOfBirth: values.dob
-            });
-          }
-        });
-      }
-    }
+    const CustomUser = this.app.defineClass((User) => {
+      return class CustomUser extends User {
+        static schema(defineSchema) {
+          return defineSchema(User.schema, {
+            schema: function({ User, Role, String, Date, Integer, Collection }, typeName, parentSchema) {
+              // Rename the "dob" field to "dateOfBirth"
+              return Object.assign(parentSchema, {
+                dob: null,
+                dateOfBirth: parentSchema.dob.clone().field('dateOfBirth')
+              });
+            },
+            demote: function(values, _opts) {
+              // Properly demote
+              return Object.assign(values, {
+                dob: values.dateOfBirth
+              });
+            },
+            promote: function(values, _opts) {
+              // Properly promote
+              return Object.assign(values, {
+                dateOfBirth: values.dob
+              });
+            }
+          });
+        }
+
+        static getTypeName() {
+          return 'User';
+        }
+      };
+    }, User);
 
     this.User = CustomUser;
     this.ModelSchema = ModelSchema;
 
-    this.schemaEngine = await this.app.registerEngine(new SchemaEngine({
+    this.schemaEngine = await this.app.registerEngine(new SchemaEngine([
       Session,
-      User: CustomUser
-    }));
+      CustomUser
+    ]));
   });
 
   it('should be able to define a model schema', function() {
-    var modelSchema = new this.ModelSchema(this.schemaEngine, { getTypeName: () => 'User', schema: this.User.schema });
+    var modelSchema = new this.ModelSchema(this.User);
 
     var definition = modelSchema.getSchemaDefinition(),
         rawSchema = modelSchema.getRawSchema();
@@ -69,7 +75,7 @@ describe('ModelSchema', function() {
   });
 
   it('should be able to define a model schema and get different versions', function() {
-    var modelSchema = new this.ModelSchema(this.schemaEngine, { getTypeName: () => 'User', schema: this.User.schema });
+    var modelSchema = new this.ModelSchema(this.User);
 
     // Clone specific schema model version
     modelSchema = modelSchema.cloneWithVersion(1);
@@ -102,7 +108,7 @@ describe('ModelSchema', function() {
   });
 
   it('should be able to define a model schema that inherits from a parent schema', function() {
-    var modelSchema = new this.ModelSchema(this.schemaEngine, {
+    var modelSchema = new this.ModelSchema({
       getTypeName: () => 'User',
       schema: (defineSchema) => {
         return defineSchema(this.User.schema, {
