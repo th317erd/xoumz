@@ -78,6 +78,14 @@
         "program": "${workspaceRoot}/node_modules/.bin/jasmine",
         "args": ["spec/connector/sqliteSpec.js"],
         "cwd": "${workspaceRoot}"
+      },
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "VersionEngine Unit Test",
+        "program": "${workspaceRoot}/node_modules/.bin/jasmine",
+        "args": ["spec/misc/versionEngineSpec.js"],
+        "cwd": "${workspaceRoot}"
       }
     ]
   }

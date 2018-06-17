@@ -1,4 +1,5 @@
 const { Application } = require('../../lib'),
+      { instanceOf } = require('../../lib/base/utils'),
       util = require('util'),
       moment = require('moment');
 
@@ -32,7 +33,7 @@ const customMatchers = {
   toBeType: function(util, customEqualityTesters) {
     return {
       compare: function(actual, expected) {
-        if (!(actual instanceof expected))
+        if (!instanceOf(actual, expected))
           return { pass: false, message: `Expected ${actual} to be an instance of ${expected.name}` };
 
         return { pass: true, message: null };
@@ -146,19 +147,28 @@ beforeAll(function(done) {
           Test
         ]));
 
-        this.registerEngine(new ConnectorEngine({
-          connectors: [
-            new SQLiteConnector({
-              databasePath: '/tmp/xoumz.sqlite'
-            })
-          ]
-        }));
+        if (this.getMasterApplication() === this) {
+          this.registerEngine(new ConnectorEngine({
+            connectors: [
+              new SQLiteConnector({
+                databasePath: '/tmp/xoumz.sqlite'
+              })
+            ]
+          }));
+        }
 
-        return await super.initialize();
+        await super.initialize();
+
+        if (this.getMasterApplication() === this) {
+          await this.addSlaveApplication(TestApplication, {
+            version: 'v0.0.0'
+          });
+        }
       }
     }
 
     jasmine.clock().mockDate(new Date('2018-01-01'));
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
 
     application = this.app = new TestApplication();
     await application.start();

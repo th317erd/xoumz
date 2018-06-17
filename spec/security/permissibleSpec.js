@@ -2,6 +2,7 @@ describe('Security', function() {
   const moment = require('moment');
 
   beforeEach(function() {
+    this.Permissible = this.app.requireModule('./security/permissible');
     this.schemaEngine = this.app.getEngine('schema');
 
     this.model = this.createTestModel();
@@ -31,8 +32,8 @@ describe('Security', function() {
       debugger;
       this.session.owner = this.user;
       debugger;
-      var level = this.model.getPermissionLevel(this.model.children[0]);
-      expect(level).toBeTheSame(this.app.Role.PERMISSION.READ);
+      var level = await this.model.getPermissionLevel(this.model.children[0]);
+      expect(level).toBeTheSame(this.Permissible.PERMISSION_LEVEL.READ);
     });
 
     // it('should be able to get perspective permissions on self', function() {

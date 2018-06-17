@@ -16,7 +16,7 @@ describe('QueryBuilder', function() {
     expect(str).toBe('FakeModel1:id="test"&(FakeModel2:stuff!="wow"|(FakeModel2:field1="value1"|FakeModel2:field2>=56))|FakeModel1:derp="\\"hello\\" world? Yeah \\"right\\""|(FakeModel1:between<=11|FakeModel1:between>=234)|FakeModel1:bool=true|FakeModel1:many!~["derp",true,45.65]');
   });
 
-  fit('should be able to serialize a QueryBuilder instance', function() {
+  it('should be able to serialize a QueryBuilder instance', function() {
     var str = this.query.serialize(),
         newQb = this.QueryBuilder.unserialize(str);
 

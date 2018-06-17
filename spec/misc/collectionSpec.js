@@ -1,7 +1,5 @@
 describe('LazyCollection', function() {
   beforeEach(function() {
-    //jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000000;
-
     const { LazyCollection } = this.app.requireModule('./base/collections');
     const COUNT = 5;
 
