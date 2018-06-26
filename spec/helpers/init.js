@@ -1,4 +1,4 @@
-const { Application } = require('../../lib'),
+const { TestApplication } = require('./app'),
       { instanceOf } = require('../../lib/base/utils'),
       util = require('util'),
       moment = require('moment');
@@ -104,68 +104,7 @@ const customMatchers = {
 
 beforeAll(function(done) {
   async function construct() {
-    class TestApplication extends Application {
-      constructor(opts) {
-        super({
-          ...(opts || {}),
-          appName: 'test'
-        });
-      }
-
-      async initialize() {
-        const { ModelBase, User, Session, Scope, OwnerScope } = this.Models;
-        const { SchemaEngine } = this.Schema;
-        const { ConnectorEngine, SQLiteConnector } = this.Connectors;
-
-        const Test = this.defineClass((ModelBase) => {
-          return class Test extends ModelBase {
-            static schema(defineSchema) {
-              return defineSchema(null, {
-                schema: function({ String, Integer, Boolean, Date, Test, Collection }) {
-                  return {
-                    'string': String,
-                    'integer': Integer,
-                    'boolean': Boolean,
-                    'date': Date,
-                    'stringArray': Collection(String),
-                    'integerArray': Collection(Integer),
-                    'children': Collection(Test)
-                  };
-                },
-                demote: (values) => values,
-                promote: (values) => values,
-              });
-            }
-          };
-        }, ModelBase);
-
-        this.registerEngine(new SchemaEngine([
-          Scope,
-          OwnerScope,
-          Session,
-          User,
-          Test
-        ]));
-
-        if (this.getMasterApplication() === this) {
-          this.registerEngine(new ConnectorEngine({
-            connectors: [
-              new SQLiteConnector({
-                databasePath: '/tmp/xoumz.sqlite'
-              })
-            ]
-          }));
-        }
-
-        await super.initialize();
-
-        if (this.getMasterApplication() === this) {
-          await this.addSlaveApplication(TestApplication, {
-            version: 'v0.0.0'
-          });
-        }
-      }
-    }
+    jasmine.addMatchers(customMatchers);
 
     jasmine.clock().mockDate(new Date('2018-01-01'));
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
@@ -223,10 +162,6 @@ beforeAll(function(done) {
       expect(value.ownerField).toBeTheSame('children');
     }
   }
-
-  jasmine.addMatchers(customMatchers);
-
-  debugger;
 
   var application;
   const testChildModelData = {
