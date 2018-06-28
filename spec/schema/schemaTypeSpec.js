@@ -1,7 +1,7 @@
 describe('SchemaType', function() {
   beforeEach(function() {
     var schemaEngine = this.schemaEngine = this.app.getEngine('schema');
-    this.field = schemaEngine.getType('String').getSchemaType().field('test_field').value('derp').required.maxLength(10).nullable(false);
+    this.field = schemaEngine.getSchemaType('String').getSchemaType().field('test_field').value('derp').required.maxLength(10).nullable(false);
   });
 
   it('should be able to define a field', function() {
@@ -60,7 +60,7 @@ describe('SchemaType', function() {
     expect(errors2).toBe(undefined);
     expect(model2.valueOf()).toBe('Test');
 
-    var field2 = this.schemaEngine.getType('String').getSchemaType().finalize();
+    var field2 = this.schemaEngine.getSchemaType('String').getSchemaType().finalize();
     expect(model instanceof model2.getModelClass()).toBe(true);
     expect(model instanceof field2.getModelClass()).toBe(true);
   });

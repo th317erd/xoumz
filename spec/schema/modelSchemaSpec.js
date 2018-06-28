@@ -50,7 +50,7 @@ describe('ModelSchema', function() {
     var definition = modelSchema.getSchemaDefinition(),
         rawSchema = modelSchema.getRawSchema();
 
-    expect(definition.version).toBe(2);
+    expect(modelSchema.getVersion()).toBe('DEV');
     expect(definition.schema).toBeType(Function);
     expect(definition.demote).toBeType(Function);
     expect(definition.promote).toBeType(Function);
@@ -78,12 +78,13 @@ describe('ModelSchema', function() {
     var modelSchema = new this.ModelSchema(this.User);
 
     // Clone specific schema model version
-    modelSchema = modelSchema.cloneWithVersion(1);
+    modelSchema = modelSchema.getVersioned('v0.0.0');
 
     var definition = modelSchema.getSchemaDefinition(),
-        rawSchema = modelSchema.getRawSchema();
+        rawSchema = modelSchema.getRawSchema(),
+        version = modelSchema.getVersion();
 
-    expect(definition.version).toBe(1);
+    expect(version).toBe('v0.0.0');
     expect(definition.schema).toBeType(Function);
     expect(definition.demote).toBeType(Function);
     expect(definition.promote).toBeType(Function);
@@ -108,25 +109,27 @@ describe('ModelSchema', function() {
   });
 
   it('should be able to define a model schema that inherits from a parent schema', function() {
-    var modelSchema = new this.ModelSchema({
-      getTypeName: () => 'User',
-      schema: (defineSchema) => {
-        return defineSchema(this.User.schema, {
-          schema: function({ String }, typeName, parentSchema) {
-            return Object.assign(parentSchema, {
-              'derp': String.maxLength(128).nullable(false)
-            });
-          },
-          demote: (model) => model,
-          promote: (model) => model
-        });
-      }
-    });
+    var parentUserSchema = this.User.schema,
+        modelSchema = new this.ModelSchema(this.app.defineClass((ModelBase) => {
+          return class User extends ModelBase {
+            static schema(defineSchema) {
+              return defineSchema(parentUserSchema, {
+                schema: function({ String }, typeName, parentSchema) {
+                  return Object.assign(parentSchema, {
+                    'derp': String.maxLength(128).nullable(false)
+                  });
+                },
+                demote: (model) => model,
+                promote: (model) => model
+              });
+            }
+          };
+        }, this.app.Models.ModelBase));
 
     var definition = modelSchema.getSchemaDefinition(),
         rawSchema = modelSchema.getRawSchema();
 
-    expect(definition.version).toBe(3);
+    expect(modelSchema.getVersion()).toBe('DEV');
     expect(definition.schema).toBeType(Function);
     expect(definition.demote).toBeType(Function);
     expect(definition.promote).toBeType(Function);
@@ -138,16 +141,6 @@ describe('ModelSchema', function() {
     expect(rawSchema.updatedAt).toBeTruthy();
 
     var derpField;
-
-    // First get version 1
-    for (var [ fieldName, field ] of modelSchema.entries({ version: 1 })) {
-      if (fieldName === 'derp') {
-        derpField = field;
-        break;
-      }
-    }
-
-    expect(derpField).toBeFalsy();
 
     // Next get current version (3)
     for (var [ fieldName, field ] of modelSchema) {
