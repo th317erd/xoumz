@@ -15,7 +15,7 @@ describe('SchemaEngine', function() {
     var definition = modelSchema.getSchemaDefinition(),
         rawSchema = modelSchema.getRawSchema();
 
-    expect(modelSchema.getTypeName()).toBe('User');
+    expect(modelSchema.getModelName()).toBe('User');
     expect(modelSchema.getVersion()).toBe('DEV');
     expect(definition.schema).toBeType(Function);
     expect(definition.demote).toBeType(Function);
@@ -37,7 +37,7 @@ describe('SchemaEngine', function() {
     var definition = modelSchema.getSchemaDefinition(),
         rawSchema = modelSchema.getRawSchema();
 
-    expect(modelSchema.getTypeName()).toBe('User');
+    expect(modelSchema.getModelName()).toBe('User');
     expect(modelSchema.getVersion()).toBe('v0.0.0');
     expect(definition.schema).toBeType(Function);
     expect(definition.demote).toBeType(Function);
@@ -59,7 +59,7 @@ describe('SchemaEngine', function() {
       return class MyCustomUser extends UserModel {
         static schema(defineSchema) {
           return defineSchema(UserModel.schema, {
-            schema: ({ String }, typeName, parentSchema) => {
+            schema: ({ String }, modelName, parentSchema) => {
               return Object.assign(parentSchema, {
                 derp: String.nullable(false).maxLength(24)
               });
@@ -80,7 +80,7 @@ describe('SchemaEngine', function() {
     var definition = modelSchema.getSchemaDefinition(),
         rawSchema = modelSchema.getRawSchema();
 
-    expect(modelSchema.getTypeName()).toBe('MyCustomUser');
+    expect(modelSchema.getModelName()).toBe('MyCustomUser');
     expect(definition.schema).toBeType(Function);
     expect(definition.demote).toBeType(Function);
     expect(definition.promote).toBeType(Function);
