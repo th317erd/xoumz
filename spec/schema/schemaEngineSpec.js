@@ -61,7 +61,7 @@ describe('SchemaEngine', function() {
           return defineSchema(UserModel.schema, {
             schema: ({ String }, modelName, parentSchema) => {
               return Object.assign(parentSchema, {
-                derp: String.nullable(false).maxLength(24)
+                derp: String.nullable(false).size(24)
               });
             },
             demote: (model) => model,

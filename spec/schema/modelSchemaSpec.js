@@ -116,7 +116,7 @@ describe('ModelSchema', function() {
               return defineSchema(parentUserSchema, {
                 schema: function({ String }, modelName, parentSchema) {
                   return Object.assign(parentSchema, {
-                    'derp': String.maxLength(128).nullable(false)
+                    'derp': String.size(128).nullable(false)
                   });
                 },
                 demote: (model) => model,

@@ -1,7 +1,7 @@
 describe('SchemaType', function() {
   beforeEach(function() {
     var schemaEngine = this.schemaEngine = this.app.getEngine('schema');
-    this.field = schemaEngine.getSchemaType('String').getSchemaType().field('test_field').value('derp').required.maxLength(10).nullable(false);
+    this.field = schemaEngine.getSchemaType('String').getSchemaType().field('test_field').value('derp').required.size(10).nullable(false);
   });
 
   it('should be able to define a field', function() {
@@ -9,18 +9,18 @@ describe('SchemaType', function() {
 
     expect(field.getProp('field')).toBe('test_field');
     expect(field.getProp('value')).toBe('derp');
-    expect(field.getProp('maxLength')).toBe(10);
+    expect(field.getProp('size')).toBe(10);
     expect(field.getProp('nullable')).toBe(false);
   });
 
   it('should be able to specify contexts', function() {
-    this.field.context('test').field('test_field2').maxLength(20).nullable(true);
+    this.field.context('test').field('test_field2').size(20).nullable(true);
     var field = this.field.finalize();
 
     // Test default context
     expect(field.getProp('field')).toBe('test_field');
     expect(field.getProp('value')).toBe('derp');
-    expect(field.getProp('maxLength')).toBe(10);
+    expect(field.getProp('size')).toBe(10);
     expect(field.getProp('nullable')).toBe(false);
 
     // Test "test" context
@@ -28,7 +28,7 @@ describe('SchemaType', function() {
 
     // This should fallback to the default context
     expect(field.getProp('value', 'test')).toBe('derp');
-    expect(field.getProp('maxLength', 'test')).toBe(20);
+    expect(field.getProp('size', 'test')).toBe(20);
     expect(field.getProp('nullable', 'test')).toBe(true);
   });
 
@@ -39,7 +39,7 @@ describe('SchemaType', function() {
     // Test default context
     expect(field.getProp('field')).toBe('test_field');
     expect(field.getProp('value')).toBe('derp');
-    expect(field.getProp('maxLength')).toBe(10);
+    expect(field.getProp('size')).toBe(10);
     expect(field.getProp('nullable')).toBe(false);
     expect(field.getProp('validators')['validate'][0]).toBeType(Function);
     expect(field.getProp('validators')['validate'][1]).toBeType(Function);
