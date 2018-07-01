@@ -6,6 +6,7 @@ class TestApplication extends Application {
   constructor(opts) {
     super({
       ...(opts || {}),
+      environment: 'development',
       appName: 'test'
     });
   }
@@ -21,7 +22,7 @@ class TestApplication extends Application {
           return defineSchema(null, {
             schema: function({ String, Integer, Boolean, Date, Test, Collection }) {
               return {
-                'string': String,
+                'string': String.size(255),
                 'integer': Integer,
                 'boolean': Boolean,
                 'date': Date,
