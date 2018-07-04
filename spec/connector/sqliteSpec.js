@@ -1,6 +1,6 @@
 describe('SQLite', function() {
-  fdescribe('Schema', function() {
-    it('should be able to successfully use a SQLiteConnector', async function() {
+  describe('Schema', function() {
+    it('should be able to use a SQLiteConnector', async function() {
       const { SQLiteConnector } = this.app.Connectors;
 
       // Create a memory connector
@@ -39,7 +39,7 @@ describe('SQLite', function() {
       });
     });
 
-    it('should be able to successfully complete a transaction', async function() {
+    it('should be able to complete a transaction', async function() {
       const { SQLiteConnector } = this.app.Connectors;
 
       // Create a memory connector
@@ -60,7 +60,7 @@ describe('SQLite', function() {
       });
     });
 
-    it('should be able to successfully rollback a failed transaction', async function() {
+    it('should be able to rollback a failed transaction', async function() {
       const { SQLiteConnector } = this.app.Connectors;
 
       // Create a memory connector
@@ -87,7 +87,7 @@ describe('SQLite', function() {
       });
     });
 
-    it('should be able to successfully return results from multiple queries', async function() {
+    it('should be able to return results from multiple queries', async function() {
       const { SQLiteConnector } = this.app.Connectors;
 
       // Create a memory connector
@@ -97,8 +97,11 @@ describe('SQLite', function() {
         await this.exec('CREATE TABLE test_table4 (id INTEGER PRIMARY KEY AUTOINCREMENT, string VARCHAR(255) NOT NULL, number INTEGER);');
 
         await this.transaction(function() {
+          // also testing that a transaction inside a transaction works
+          this.exec('BEGIN');
           this.exec({ query: 'INSERT INTO test_table3 (string, number) VALUES (?, ?);', values: ['test2', 123] });
           this.exec({ query: 'INSERT INTO test_table3 (string, number) VALUES (?, ?);', values: ['hello2', 321] });
+          this.exec('COMMIT');
         });
 
         var results = await this.exec([
@@ -119,7 +122,7 @@ describe('SQLite', function() {
     });
   });
 
-  describe('Schema', function() {
+  fdescribe('Schema', function() {
     it('should be able to create required tables from schema', async function() {
       var connectorEngine = this.app.getEngine('connector');
       var connection = connectorEngine.getConnector();
