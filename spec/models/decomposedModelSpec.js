@@ -34,7 +34,7 @@ describe('SchemaType', function() {
       expect(user.firstName.valueOf()).toBe('WOW!!!');
 
       user.roles = ['hello', 'world'];
-      expect(user.roles).toBeType(this.LazyCollection);
+      expect(user.roles).toBeType(this.app.Models.Collection);
       expect(user.roles.length).toBe(2);
 
       // Should not be able to set a virtual property

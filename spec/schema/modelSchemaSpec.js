@@ -1,7 +1,7 @@
 describe('ModelSchema', function() {
   beforeEach(async function() {
     const { SchemaEngine, ModelSchema } = this.app.Schema;
-    const { User, Session } = this.app.Models;
+    const { User, Session, Scope, OwnerScope, Collection } = this.app.Models;
 
     const CustomUser = this.app.defineClass((User) => {
       return class CustomUser extends User {
@@ -39,6 +39,9 @@ describe('ModelSchema', function() {
     this.ModelSchema = ModelSchema;
 
     this.schemaEngine = await this.app.registerEngine(new SchemaEngine([
+      Scope,
+      OwnerScope,
+      Collection,
       Session,
       CustomUser
     ]));
