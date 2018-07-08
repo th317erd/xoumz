@@ -12,7 +12,7 @@ class TestApplication extends Application {
   }
 
   async initialize() {
-    const { ModelBase, User, Session, Scope, OwnerScope } = this.Models;
+    const { ModelBase, User, Session, Scope, OwnerScope, Collection } = this.Models;
     const { SchemaEngine } = this.Schema;
     const { ConnectorEngine, SQLiteConnector } = this.Connectors;
 
@@ -43,11 +43,12 @@ class TestApplication extends Application {
       OwnerScope,
       Session,
       User,
+      Collection,
       Test
     ]));
 
     if (this.getMasterApplication() === this) {
-      //fs.unlinkSync(DATABASE_PATH);
+      fs.unlinkSync(DATABASE_PATH);
       this.registerEngine(new ConnectorEngine({
         connectors: [
           new SQLiteConnector({
