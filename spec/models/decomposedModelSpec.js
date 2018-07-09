@@ -10,18 +10,20 @@ describe('SchemaType', function() {
   });
 
   describe('External functionality', function() {
-    it('should be able to decompose a valid model', async function(done) {
+    fit('should be able to decompose a valid model', async function(done) {
       var user = this.user;
 
-      expect(user.firstName.valueOf()).toBe('derp');
-      expect(user.lastName.valueOf()).toBe('dude');
-      expect(user.userName.valueOf()).toBe('test');
-      expect(user.age.valueOf()).toBe(31);
+      expect(user.firstName).toBe('derp');
+      expect(user.lastName).toBe('dude');
+      expect(user.userName).toBe('test');
+      expect(user.age).toBe(31);
 
       var roles = await user.roles.all();
       expect(roles).toBeType(Array);
       expect(roles.length).toBe(4);
       expect(roles.join(',')).toBe('derp,test,stuff,hello');
+
+      var decomposed = user.decompose();
 
       done();
     });
