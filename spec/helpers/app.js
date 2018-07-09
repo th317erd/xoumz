@@ -48,7 +48,7 @@ class TestApplication extends Application {
     ]));
 
     if (this.getMasterApplication() === this) {
-      fs.unlinkSync(DATABASE_PATH);
+      //fs.unlinkSync(DATABASE_PATH);
       this.registerEngine(new ConnectorEngine({
         connectors: [
           new SQLiteConnector({
