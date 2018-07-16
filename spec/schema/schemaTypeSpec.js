@@ -61,7 +61,7 @@ describe('SchemaType', function() {
     expect(model2.valueOf()).toBe('Test');
 
     var field2 = this.schemaEngine.getSchemaType('String').getSchemaType().finalize();
-    expect(model instanceof model2.getModelClass()).toBe(true);
-    expect(model instanceof field2.getModelClass()).toBe(true);
+    expect(model instanceof model.getModelClass()).toBe(true);
+    expect(model2 instanceof field2.getModelClass()).toBe(false);
   });
 });
